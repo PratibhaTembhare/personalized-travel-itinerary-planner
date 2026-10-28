@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>✈️ WanderAI – Travel Itinerary Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-light: #a5b4fc;
+  --accent: #10b981;
+  --bg: #0f0f1a;
+  --bg-card: #1a1a2e;
+  --bg-card2: #16213e;
+  --border: rgba(99,102,241,0.2);
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --morning: #fbbf24;
+  --afternoon: #f97316;
+  --evening: #a78bfa;
+  --food: #34d399;
+  --tips: #60a5fa;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
+html { scroll-behavior:smooth }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden }
+a { color:var(--primary-light); text-decoration:none }
+a:hover { color:white }
+.container { max-width:1100px; margin:0 auto; padding:0 1.5rem }
+.gradient-text { background:linear-gradient(135deg,#818cf8,#a78bfa,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text }
+
+/* ── HERO ── */
+.hero { position:relative; min-height:100vh; display:flex; flex-direction:column; background:linear-gradient(135deg,#0f0f1a,#1a1a2e,#0d1117); overflow:hidden }
+.hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 60% at 20% 50%,rgba(99,102,241,.13) 0%,transparent 70%),radial-gradient(ellipse 50% 50% at 80% 20%,rgba(167,139,250,.08) 0%,transparent 70%); pointer-events:none }
+.hero::after { content:''; position:absolute; width:2px; height:2px; border-radius:50%; background:white; box-shadow:120px 80px 0 rgba(255,255,255,.6),240px 200px 0 rgba(255,255,255,.4),380px 120px 0 rgba(255,255,255,.5),500px 300px 0 rgba(255,255,255,.3),650px 90px 0 rgba(255,255,255,.7),780px 230px 0 rgba(255,255,255,.4),920px 150px 0 rgba(255,255,255,.5),300px 420px 0 rgba(255,255,255,.4),750px 400px 0 rgba(255,255,255,.5); top:0; left:0; pointer-events:none }
+
+.navbar { position:relative; z-index:10; display:flex; justify-content:space-between; align-items:center; padding:1.5rem 2rem }
+.brand { display:flex; align-items:center; gap:.5rem; font-size:1.4rem; font-weight:800 }
+.brand-name { background:linear-gradient(135deg,#818cf8,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text }
+.nav-links { display:flex; gap:1.5rem }
+.nav-links a { color:var(--text-muted); font-size:.9rem; font-weight:500; padding:.4rem .8rem; border-radius:8px; transition:all .2s }
+.nav-links a:hover { color:white; background:rgba(255,255,255,.05) }
+
+.hero-content { position:relative; z-index:5; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:3rem 1.5rem 5rem; gap:1.5rem }
+.hero-badge { display:inline-flex; align-items:center; gap:.4rem; background:rgba(99,102,241,.15); border:1px solid rgba(99,102,241,.3); color:var(--primary-light); padding:.4rem 1rem; border-radius:50px; font-size:.85rem; font-weight:600 }
+.hero-title { font-family:'Playfair Display',serif; font-size:clamp(2.4rem,6vw,4.5rem); font-weight:800; line-height:1.15; color:white }
+.hero-sub { max-width:580px; font-size:clamp(.95rem,2vw,1.1rem); color:var(--text-muted); line-height:1.7 }
+.hero-cta { display:inline-flex; align-items:center; gap:.6rem; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white!important; padding:1rem 2rem; border-radius:50px; font-size:1rem; font-weight:600; transition:all .3s; box-shadow:0 8px 30px rgba(99,102,241,.4) }
+.hero-cta:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(99,102,241,.5) }
+.scroll-dot-wrap { position:absolute; bottom:2rem; left:50%; transform:translateX(-50%); z-index:5 }
+.scroll-dot { width:6px; height:6px; background:var(--primary-light); border-radius:50%; animation:bounce 2s infinite }
+@keyframes bounce { 0%,100%{transform:translateY(0);opacity:.5} 50%{transform:translateY(8px);opacity:1} }
+
+/* ── PLANNER ── */
+.planner { padding:5rem 0 }
+.sec-head { text-align:center; margin-bottom:2.5rem }
+.sec-head h2 { font-family:'Playfair Display',serif; font-size:2.2rem; font-weight:700; color:white; margin-bottom:.5rem }
+.sec-head p { color:var(--text-muted) }
+
+/* ── CARD ── */
+.card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:2rem; box-shadow:0 4px 20px rgba(0,0,0,.3); transition:box-shadow .3s }
+.card:hover { box-shadow:0 20px 60px rgba(0,0,0,.4) }
+
+/* ── FORM ── */
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:2rem }
+.fg { display:flex; flex-direction:column; gap:.5rem }
+.fg.full { grid-column:1/-1 }
+label { font-size:.88rem; font-weight:600; color:var(--text); display:flex; align-items:center; gap:.4rem; flex-wrap:wrap }
+.lnote { color:var(--text-dim); font-weight:400; font-size:.8rem }
+.iw { position:relative; display:flex; align-items:center }
+.iw .ii { position:absolute; right:1rem; pointer-events:none }
+
+input[type=text],input[type=date],input[type=number],textarea,select {
+  width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:var(--radius-sm); padding:.75rem 1rem; color:var(--text); font-family:inherit; font-size:.93rem; transition:all .2s; outline:none
+}
+input:focus,textarea:focus,select:focus { border-color:var(--primary); background:rgba(99,102,241,.06); box-shadow:0 0 0 3px rgba(99,102,241,.15) }
+input::placeholder,textarea::placeholder { color:var(--text-dim) }
+input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.7); cursor:pointer }
+textarea { resize:vertical; min-height:80px }
+.hint { font-size:.76rem; color:var(--text-dim); margin-top:.2rem }
+
+/* ── CHIPS ── */
+.chips { display:flex; flex-wrap:wrap; gap:.5rem }
+.chip { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:50px; padding:.4rem .9rem; color:var(--text-muted); font-family:inherit; font-size:.83rem; font-weight:500; cursor:pointer; transition:all .2s; white-space:nowrap }
+.chip:hover { border-color:var(--primary); color:var(--primary-light); background:rgba(99,102,241,.08) }
+.chip.on { background:rgba(99,102,241,.2); border-color:var(--primary); color:var(--primary-light); font-weight:600 }
+
+/* ── BUTTONS ── */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.75rem 1.5rem; border-radius:50px; font-family:inherit; font-size:.93rem; font-weight:600; cursor:pointer; border:none; transition:all .25s }
+.btn-p { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; box-shadow:0 6px 25px rgba(99,102,241,.35) }
+.btn-p:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 10px 35px rgba(99,102,241,.5) }
+.btn-p:disabled { opacity:.6; cursor:not-allowed; transform:none }
+.btn-s { background:rgba(255,255,255,.06); color:var(--text-muted); border:1px solid rgba(255,255,255,.1) }
+.btn-s:hover { background:rgba(255,255,255,.1); color:var(--text) }
+.btn-o { background:rgba(255,255,255,.05); color:var(--text-muted); border:1px solid rgba(255,255,255,.12); padding:.55rem 1.1rem; font-size:.85rem }
+.btn-o:hover { background:rgba(255,255,255,.1); color:white }
+.btn-gen { padding:1rem 2.5rem; font-size:1rem; min-width:230px }
+.f-actions { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-top:1.5rem }
+
+/* Spinner */
+.spinner { width:18px; height:18px; animation:spin .8s linear infinite }
+@keyframes spin { to { transform:rotate(360deg) } }
+.btn-loader { display:inline-flex; align-items:center; gap:.5rem }
+
+/* ── ERROR ── */
+.err-bar { display:flex; align-items:flex-start; gap:1rem; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3); border-radius:var(--radius-sm); padding:1rem 1.25rem; margin-bottom:1.5rem; color:#fca5a5; font-size:.9rem }
+.err-bar button { margin-left:auto; background:none; border:none; color:#fca5a5; cursor:pointer; font-size:1rem; flex-shrink:0 }
+
+/* ── LOADING ── */
+.load-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:3rem 2rem; text-align:center; margin-bottom:1.5rem }
+.plane-anim { animation:fly 2s ease-in-out infinite; display:inline-block; font-size:3rem; margin-bottom:.5rem }
+@keyframes fly { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-12px) rotate(5deg)} }
+.dots { display:flex; justify-content:center; gap:.4rem; margin:.5rem 0 }
+.dots span { width:8px; height:8px; background:var(--primary); border-radius:50%; animation:dp 1.2s ease-in-out infinite }
+.dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
+@keyframes dp { 0%,100%{transform:scale(1);opacity:.5} 50%{transform:scale(1.4);opacity:1} }
+.load-title { font-size:1.25rem; font-weight:700; color:white; margin:.75rem 0 .4rem }
+.load-sub { color:var(--text-muted); font-size:.88rem; margin-bottom:1.25rem }
+.load-steps { display:flex; flex-direction:column; gap:.4rem; max-width:270px; margin:0 auto }
+.step { padding:.45rem .9rem; border-radius:8px; font-size:.83rem; color:var(--text-dim); transition:all .4s }
+.step.on { background:rgba(99,102,241,.15); border:1px solid rgba(99,102,241,.25); color:var(--primary-light); font-weight:600 }
+.step.done { color:var(--accent) }
+
+/* ── SUMMARY BAR ── */
+.sum-bar { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.5rem; background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(167,139,250,.08)); border:1px solid rgba(99,102,241,.3); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1rem }
+.sum-dest { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:700; color:white; margin-bottom:.65rem }
+.sum-meta { display:flex; flex-wrap:wrap; gap:.65rem }
+.sum-meta span { background:rgba(255,255,255,.07); border-radius:50px; padding:.28rem .75rem; font-size:.8rem; color:var(--text-muted); border:1px solid rgba(255,255,255,.08) }
+.sum-actions { display:flex; gap:.65rem; flex-wrap:wrap; align-items:center }
+
+/* ── AI NOTE ── */
+.ai-note { display:flex; gap:.6rem; background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.2); border-radius:var(--radius-sm); padding:.7rem 1rem; margin-bottom:1.5rem; color:#fcd34d; font-size:.8rem; line-height:1.5 }
+
+/* ── ITINERARY GRID ── */
+.itin-grid { display:grid; gap:1.5rem; margin-bottom:2rem }
+
+/* ── DAY CARD ── */
+.day-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; animation:fsi .5s ease forwards; opacity:0 }
+@keyframes fsi { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.day-head { display:flex; align-items:center; gap:1rem; padding:1.2rem 1.5rem; background:linear-gradient(90deg,rgba(99,102,241,.15),transparent); border-bottom:1px solid var(--border); cursor:pointer; user-select:none; transition:background .2s }
+.day-head:hover { background:linear-gradient(90deg,rgba(99,102,241,.22),transparent) }
+.day-badge { min-width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:.6rem; font-weight:700; color:white; text-transform:uppercase; letter-spacing:.04em; line-height:1.2; box-shadow:0 4px 12px rgba(99,102,241,.3) }
+.day-badge .dn { font-size:1.1rem }
+.day-meta { flex:1 }
+.day-title { font-size:1rem; font-weight:700; color:white }
+.day-date { font-size:.76rem; color:var(--text-dim); margin-top:.1rem }
+.day-chev { color:var(--text-dim); transition:transform .3s; font-size:1.2rem }
+.day-card.collapsed .day-chev { transform:rotate(-90deg) }
+.day-body { max-height:2000px; overflow:hidden; transition:max-height .4s ease }
+.day-card.collapsed .day-body { max-height:0 }
+.day-inner { padding:1.2rem 1.5rem; display:grid; gap:1rem }
+
+/* ── SLOTS ── */
+.slot { display:flex; gap:1rem; align-items:flex-start }
+.slot-ic { display:flex; flex-direction:column; align-items:center }
+.slot-icon { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0 }
+.slot-line { width:2px; flex:1; min-height:18px; border-radius:1px; margin:3px 0 }
+.slot.morn .slot-icon{background:rgba(251,191,36,.15)} .slot.morn .slot-line{background:rgba(251,191,36,.2)} .slot.morn .slot-lbl{color:var(--morning)}
+.slot.aftn .slot-icon{background:rgba(249,115,22,.15)} .slot.aftn .slot-line{background:rgba(249,115,22,.2)} .slot.aftn .slot-lbl{color:var(--afternoon)}
+.slot.evng .slot-icon{background:rgba(167,139,250,.15)} .slot.evng .slot-line{background:rgba(167,139,250,.2)} .slot.evng .slot-lbl{color:var(--evening)}
+.slot-cnt { flex:1; min-width:0 }
+.slot-lbl { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin-bottom:.28rem }
+.slot-name { font-size:.95rem; font-weight:600; color:white; margin-bottom:.22rem }
+.slot-desc { font-size:.84rem; color:var(--text-muted); line-height:1.55 }
+
+/* food */
+.food-box { background:rgba(52,211,153,.06); border:1px solid rgba(52,211,153,.15); border-radius:var(--radius-sm); padding:.8rem 1rem }
+.food-ttl { font-size:.76rem; font-weight:700; color:var(--food); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.35rem }
+.food-tags { display:flex; flex-wrap:wrap; gap:.35rem }
+.ftag { background:rgba(52,211,153,.12); border:1px solid rgba(52,211,153,.2); border-radius:50px; padding:.22rem .65rem; font-size:.76rem; color:#6ee7b7 }
+
+/* tip box */
+.tip-box { background:rgba(96,165,250,.06); border:1px solid rgba(96,165,250,.15); border-radius:var(--radius-sm); padding:.8rem 1rem }
+.tip-ttl { font-size:.76rem; font-weight:700; color:var(--tips); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.35rem }
+.tip-txt { font-size:.84rem; color:var(--text-muted); line-height:1.5 }
+
+/* ── GENERAL TIPS ── */
+.gtips { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:2rem; margin-bottom:2rem }
+.gtips-title { font-size:1.15rem; font-weight:700; color:white; margin-bottom:1.2rem }
+.gtips-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:1rem }
+.gtip { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:var(--radius-sm); padding:1rem }
+.gtip-icon { font-size:1.4rem; margin-bottom:.45rem }
+.gtip-title { font-size:.88rem; font-weight:700; color:white; margin-bottom:.28rem }
+.gtip-text { font-size:.8rem; color:var(--text-muted); line-height:1.5 }
+
+/* ── BACK BTN ── */
+.back-wrap { text-align:center; padding:1rem 0 }
+.back-btn { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:var(--text-muted); padding:.55rem 1.4rem; border-radius:50px; cursor:pointer; font-family:inherit; font-size:.86rem; transition:all .2s }
+.back-btn:hover { background:rgba(255,255,255,.1); color:white }
+
+/* ── ABOUT ── */
+.about { padding:5rem 0; background:linear-gradient(180deg,var(--bg) 0%,var(--bg-card2) 50%,var(--bg) 100%) }
+.about-grid { display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:center }
+.about-content h2 { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:700; color:white; margin-bottom:1rem }
+.about-content>p { color:var(--text-muted); font-size:.97rem; line-height:1.7; margin-bottom:1.8rem }
+.feat-list { display:flex; flex-direction:column; gap:1.1rem }
+.feat { display:flex; align-items:flex-start; gap:.9rem }
+.feat-icon { font-size:1.3rem; flex-shrink:0; margin-top:.1rem }
+.feat strong { display:block; color:white; font-size:.93rem; margin-bottom:.12rem }
+.feat p { color:var(--text-muted); font-size:.83rem; margin:0 }
+.stats-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:2rem; display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; max-width:360px; width:100% }
+.stat { display:flex; flex-direction:column; align-items:center; text-align:center }
+.stat-num { font-size:1.9rem; font-weight:800; background:linear-gradient(135deg,#818cf8,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; margin-bottom:.35rem }
+.stat-lbl { font-size:.75rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em }
+
+/* ── FOOTER ── */
+footer { padding:2rem 0; border-top:1px solid rgba(255,255,255,.06) }
+.foot-inner { display:flex; flex-direction:column; align-items:center; text-align:center; gap:.4rem }
+.foot-note { font-size:.83rem; color:var(--text-dim) }
+.foot-small { font-size:.73rem; color:var(--text-dim); opacity:.6 }
+
+/* ── PRINT ── */
+@media print {
+  .hero,.navbar,.card.form-card,.about,.footer,.f-actions,.sum-actions,.back-wrap,.ai-note { display:none!important }
+  body { background:white; color:black }
+  .day-card.collapsed .day-body { max-height:none!important }
+  * { color:black!important; background:transparent!important }
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px) {
+  .form-grid { grid-template-columns:1fr }
+  .fg.full { grid-column:auto }
+  .about-grid { grid-template-columns:1fr }
+  .about-grid>div:last-child { display:none }
+  .sum-bar { flex-direction:column }
+  .sum-actions { width:100% }
+  .nav-links { display:none }
+  .hero-title { font-size:2.2rem }
+}
+@media(max-width:480px) {
+  .card { padding:1.25rem }
+  .f-actions { flex-direction:column; align-items:stretch }
+  .btn-gen { width:100%; min-width:auto }
+  .sum-actions .btn-o { flex:1; justify-content:center }
+  .day-inner { padding:1rem }
+  .slot-line { display:none }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════ -->
+<header class="hero">
+  <nav class="navbar">
+    <div class="brand">
+      <span>✈️</span>
+      <span class="brand-name">WanderAI</span>
+    </div>
+    <div class="nav-links">
+      <a href="#planner">Plan Trip</a>
+      <a href="#about">About</a>
+    </div>
+  </nav>
+
+  <div class="hero-content">
+    <div class="hero-badge">🤖 AI-Powered Itinerary Planner</div>
+    <h1 class="hero-title">Your Dream Trip,<br><span class="gradient-text">Planned in Seconds</span></h1>
+    <p class="hero-sub">Tell us where you want to go and we'll craft a personalized day-by-day itinerary — complete with local food picks, activities, and travel tips.</p>
+    <a href="#planner" class="hero-cta">
+      Start Planning
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="scroll-dot-wrap"><div class="scroll-dot"></div></div>
+</header>
+
+<!-- ═══════════════════════════════════════════
+     PLANNER
+══════════════════════════════════════════════ -->
+<section id="planner" class="planner">
+  <div class="container">
+    <div class="sec-head">
+      <h2>Plan Your Journey</h2>
+      <p>Fill in your details below and get an instant AI-crafted itinerary ✨</p>
+    </div>
+
+    <!-- FORM -->
+    <div class="card form-card">
+      <div class="form-grid">
+
+        <div class="fg full">
+          <label for="dest">📍 Destination City / Country</label>
+          <div class="iw">
+            <input type="text" id="dest" placeholder="e.g., Tokyo, Japan  |  Paris, France  |  Goa, India" />
+            <span class="ii">🗺️</span>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label for="sd">📅 Start Date</label>
+          <input type="date" id="sd" />
+        </div>
+        <div class="fg">
+          <label for="ed">📅 End Date</label>
+          <input type="date" id="ed" />
+        </div>
+
+        <div class="fg">
+          <label for="trav">👥 Number of Travelers</label>
+          <div class="iw">
+            <input type="number" id="trav" min="1" max="20" value="2" />
+            <span class="ii">👤</span>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label>💰 Budget Range</label>
+          <div class="chips" id="budgetChips">
+            <button class="chip" data-v="Budget"   onclick="pick(this,'budget')">💵 Budget</button>
+            <button class="chip on" data-v="Moderate" onclick="pick(this,'budget')">💳 Moderate</button>
+            <button class="chip" data-v="Luxury"   onclick="pick(this,'budget')">💎 Luxury</button>
+          </div>
+        </div>
+
+        <div class="fg full">
+          <label>🎯 Travel Style</label>
+          <div class="chips" id="styleChips">
+            <button class="chip" data-v="Adventure"  onclick="pick(this,'style')">🏔️ Adventure</button>
+            <button class="chip on" data-v="Cultural" onclick="pick(this,'style')">🏛️ Cultural</button>
+            <button class="chip" data-v="Relaxation" onclick="pick(this,'style')">🏖️ Relaxation</button>
+            <button class="chip" data-v="Food Lover" onclick="pick(this,'style')">🍜 Food Lover</button>
+            <button class="chip" data-v="Family"     onclick="pick(this,'style')">👨‍👩‍👧 Family</button>
+            <button class="chip" data-v="Romantic"   onclick="pick(this,'style')">💑 Romantic</button>
+          </div>
+        </div>
+
+        <div class="fg full">
+          <label>❤️ Interests <span class="lnote">(select multiple)</span></label>
+          <div class="chips" id="interestChips">
+            <button class="chip" data-v="History"      onclick="tog(this)">📜 History</button>
+            <button class="chip on" data-v="Local Food" onclick="tog(this)">🍽️ Local Food</button>
+            <button class="chip" data-v="Nature"       onclick="tog(this)">🌿 Nature</button>
+            <button class="chip on" data-v="Photography" onclick="tog(this)">📸 Photography</button>
+            <button class="chip" data-v="Shopping"     onclick="tog(this)">🛍️ Shopping</button>
+            <button class="chip" data-v="Nightlife"    onclick="tog(this)">🌙 Nightlife</button>
+            <button class="chip" data-v="Art & Museums" onclick="tog(this)">🎨 Art & Museums</button>
+            <button class="chip" data-v="Wellness"     onclick="tog(this)">🧘 Wellness & Spa</button>
+            <button class="chip" data-v="Architecture" onclick="tog(this)">🏰 Architecture</button>
+          </div>
+        </div>
+
+        <div class="fg full">
+          <label for="notes">✍️ Special Notes <span class="lnote">(optional)</span></label>
+          <textarea id="notes" placeholder="e.g., Vegetarian food preferred · Travelling with kids · Avoid crowded tourist spots..." rows="3"></textarea>
+        </div>
+
+      </div>
+
+      <div class="f-actions">
+        <button class="btn btn-p btn-gen" id="genBtn" onclick="generate()">
+          <span id="bIcon">✨</span>
+          <span id="bTxt">Generate My Itinerary</span>
+          <span class="btn-loader" id="bLoad" style="display:none">
+            <svg class="spinner" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10" stroke-linecap="round"/>
+            </svg>
+            Generating...
+          </span>
+        </button>
+        <button class="btn btn-s" onclick="resetAll()">🔄 Reset</button>
+      </div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="err-bar" id="errBar" style="display:none">
+      <span>⚠️</span>
+      <span id="errMsg">Error</span>
+      <button onclick="document.getElementById('errBar').style.display='none'">✕</button>
+    </div>
+
+    <!-- LOADING -->
+    <div class="load-card" id="loadCard" style="display:none">
+      <div class="plane-anim">✈️</div>
+      <div class="dots"><span></span><span></span><span></span></div>
+      <h3 class="load-title">Planning your perfect trip...</h3>
+      <p class="load-sub">Crafting your personalized day-by-day itinerary...</p>
+      <div class="load-steps" id="lSteps">
+        <div class="step on">🔍 Analysing your destination</div>
+        <div class="step">🗓️ Building day-by-day schedule</div>
+        <div class="step">🍴 Picking local food gems</div>
+        <div class="step">💡 Adding insider travel tips</div>
+      </div>
+    </div>
+
+    <!-- OUTPUT -->
+    <div id="output" style="display:none">
+
+      <div class="sum-bar">
+        <div>
+          <div class="sum-dest" id="sDest">—</div>
+          <div class="sum-meta">
+            <span id="sDates">📅</span>
+            <span id="sNights">🌙</span>
+            <span id="sTrav">👥</span>
+            <span id="sBudget">💳</span>
+          </div>
+        </div>
+        <div class="sum-actions">
+          <button class="btn btn-o" onclick="doPrint()">📄 Print / PDF</button>
+          <button class="btn btn-o" id="copyBtn" onclick="doCopy()">📋 Copy</button>
+          <button class="btn btn-o" onclick="resetAll()">🔄 New Trip</button>
+        </div>
+      </div>
+
+      <div class="ai-note">
+        <span>🤖</span>
+        <span>Itinerary generated from smart destination templates. Always verify timings and entry fees before traveling. Enjoy your trip! 🌍</span>
+      </div>
+
+      <div class="itin-grid" id="itinGrid"></div>
+
+      <div class="gtips" id="gTips" style="display:none">
+        <h3 class="gtips-title">💡 Essential Travel Tips</h3>
+        <div class="gtips-grid" id="gTipsGrid"></div>
+      </div>
+
+      <div class="back-wrap">
+        <button class="back-btn" onclick="document.getElementById('planner').scrollIntoView({behavior:'smooth'})">↑ Back to Form</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     ABOUT
+══════════════════════════════════════════════ -->
+<section id="about" class="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-content">
+        <h2>About WanderAI</h2>
+        <p>WanderAI creates hyper-personalized travel itineraries instantly — tailored to your budget, style, and interests. No sign-up, no API key, no cost. Just fill the form and travel!</p>
+        <div class="feat-list">
+          <div class="feat"><span class="feat-icon">⚡</span><div><strong>Instant Results</strong><p>Full itinerary in under 2 seconds</p></div></div>
+          <div class="feat"><span class="feat-icon">🎯</span><div><strong>Personalized</strong><p>Tailored to your budget, style & interests</p></div></div>
+          <div class="feat"><span class="feat-icon">🔒</span><div><strong>No Account Needed</strong><p>No sign-up, no API key, works offline</p></div></div>
+          <div class="feat"><span class="feat-icon">📱</span><div><strong>Works Everywhere</strong><p>Mobile, tablet, desktop — any device</p></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="stats-card">
+          <div class="stat"><span class="stat-num">100+</span><span class="stat-lbl">Destinations</span></div>
+          <div class="stat"><span class="stat-num">AI</span><span class="stat-lbl">Powered</span></div>
+          <div class="stat"><span class="stat-num">Free</span><span class="stat-lbl">Always</span></div>
+          <div class="stat"><span class="stat-num">24/7</span><span class="stat-lbl">Available</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-inner">
+      <div class="brand"><span>✈️</span><span class="brand-name">WanderAI</span></div>
+      <p class="foot-note">Built with ❤️ — No API key required</p>
+      <p class="foot-small">All itineraries are template-based suggestions. Verify details before booking.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── State ── */
+const S = { budget:'Moderate', style:'Cultural', interests:['Local Food','Photography'], last:null, lastP:null };
+
+/* ── Chip helpers ── */
+function pick(el, grp) {
+  el.closest('.chips').querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  S[grp] = el.dataset.v;
+}
+function tog(el) {
+  el.classList.toggle('on');
+  const v = el.dataset.v;
+  S.interests = el.classList.contains('on')
+    ? [...new Set([...S.interests, v])]
+    : S.interests.filter(x=>x!==v);
+}
+
+/* ── Utils ── */
+const esc = s => typeof s==='string' ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
+const cap = s => s ? s[0].toUpperCase()+s.slice(1) : '';
+function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/864e5) }
+function fmtD(ds){ return new Date(ds+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) }
+function dayLabel(ds,n){ const d=new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) }
+function bEmoji(b){ return {Budget:'💵',Moderate:'💳',Luxury:'💎'}[b]||'💰' }
+
+/* ── Validate ── */
+function validate(){
+  const dest=document.getElementById('dest').value.trim();
+  const sd=document.getElementById('sd').value;
+  const ed=document.getElementById('ed').value;
+  if(!dest) return 'Please enter a destination.';
+  if(!sd)   return 'Please select a start date.';
+  if(!ed)   return 'Please select an end date.';
+  if(new Date(ed)<new Date(sd)) return 'End date must be after start date.';
+  if(daysBetween(sd,ed)>29) return 'Please plan a trip of 30 days or fewer.';
+  if(S.interests.length===0) return 'Please select at least one interest.';
+  return null;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DESTINATION DATA  — Smart template engine (no API needed)
+══════════════════════════════════════════════════════════════ */
+const DESTINATIONS = {
+  // ── ASIA ──
+  tokyo: {
+    name:'Tokyo, Japan', flag:'🇯🇵',
+    tagline:'Where ancient temples meet neon-lit future',
+    themes:['Old Tokyo & Senso-ji','Shibuya & Harajuku Vibes','Shinjuku & Nightlife','Akihabara & Pop Culture','Day Trip to Nikko','Mount Fuji Views','Ueno & Museums','Ginza & Luxury'],
+    morning:[
+      {a:'Senso-ji Temple at Dawn',d:'Arrive at Tokyo\'s oldest Buddhist temple before the crowds hit. The iconic Kaminarimon Gate and five-story pagoda glow in the morning light. Browse the Nakamise shopping street for traditional souvenirs.'},
+      {a:'Shibuya Crossing & Surrounds',d:'Start at the famous scramble crossing — best viewed from Starbucks or the elevated bridge. Walk to Hachiko statue, then explore the colorful youth fashion scene of Harajuku\'s Takeshita Street.'},
+      {a:'Shinjuku Gyoen National Garden',d:'One of Japan\'s most beautiful parks, perfect for a peaceful morning stroll. Cherry blossoms in spring and vibrant autumn leaves make this a photographer\'s dream. Entry is just ¥500.'},
+      {a:'Akihabara Electronics District',d:'The world\'s hub for anime, manga, and electronics. Morning is ideal to explore multi-floor arcades, figure shops, and niche gadget stores before the afternoon crowds arrive.'},
+      {a:'Tsukiji Outer Market Breakfast',d:'Even after the inner market moved, the outer Tsukiji market remains a foodie paradise. Slurp fresh ramen, eat tamagoyaki (egg rolls) hot off the griddle, and sample the freshest sushi for breakfast.'},
+      {a:'teamLab Borderless Digital Art',d:'One of Tokyo\'s most Instagrammable spots — an immersive digital art museum where light and motion react to your presence. Book tickets online well in advance.'},
+      {a:'Imperial Palace East Gardens',d:'Stroll through the serene East Gardens of the Imperial Palace, free to enter. The Ninomaru Information Center displays palace artifacts. A calm, green escape in the heart of busy Tokyo.'},
+      {a:'Ueno Park & Zoo Morning Walk',d:'Ueno Park hosts five major museums, a zoo, and Shinobazu Pond with lotus flowers. Arrive early on weekends when locals practice traditional music and exercise in the park.'},
+    ],
+    afternoon:[
+      {a:'Asakusa Rickshaw & Street Food',d:'Hire a jinrikisha (rickshaw) for a guided tour through Asakusa\'s old-town streets. Then feast on ningyo-yaki, melonpan, and age-manju from street stalls around Nakamise Dori.'},
+      {a:'Harajuku Crepe & Fashion Walk',d:'Meander through Omotesando\'s luxury boutiques and Harajuku\'s quirky street fashion. Stop for a giant crepe stuffed with strawberries and whipped cream — a Harajuku rite of passage.'},
+      {a:'Odaiba Waterfront & Teamlab',d:'Take the Yurikamome monorail to Odaiba for stunning Rainbow Bridge views, a replica Statue of Liberty, and futuristic DiverCity shopping mall. Visit the giant life-size Gundam statue outside.'},
+      {a:'Meiji Shrine Forest Walk',d:'A 5-minute walk from Harajuku station leads into a serene 70-hectare forest enshrining Emperor Meiji. The peaceful gravel paths and towering torii gates offer a complete contrast to busy Shibuya.'},
+      {a:'Sumo Wrestling Museum Visit',d:'Visit the Ryogoku Kokugikan sumo hall and adjacent museum to learn about Japan\'s national sport. If visiting in January, May, or September, catch a live tournament — an unforgettable experience.'},
+      {a:'teamLab Planets Toyosu',d:'Walk through knee-deep water mirrors, a crystal world, and floating flowers in this immersive sensory art experience. Different from Borderless, equally stunning. Closed-toe shoes advised!'},
+      {a:'Ginza Gallery & Shopping Afternoon',d:'Tokyo\'s most glamorous district blends world-class art galleries (Itchiku Kubota Art Museum) with Chanel, Louis Vuitton, and the beloved Itoya stationery store. Try fresh wagyu beef at one of the basement delis.'},
+      {a:'Nakameguro Canal Walk',d:'Stroll along the Meguro River, lined with independent cafes, vintage shops, and cherry trees. This trendy neighborhood is beloved by Tokyoites and rarely crowded with tourists — authentic and beautiful.'},
+    ],
+    evening:[
+      {a:'Izakaya Dinner in Shinjuku Golden Gai',d:'Golden Gai is a maze of over 200 tiny bars, each seating just 6–8 people. Sip local craft beers and sake while chatting with locals and expats. This is authentic Tokyo nightlife at its best.'},
+      {a:'Tokyo Skytree Sunset Views',d:'Ascend Japan\'s tallest structure (634m) for panoramic sunset views over the entire Kanto plain. On clear days, Mount Fuji is visible. The illuminated city at night is breathtaking.'},
+      {a:'Omoide Yokocho (Memory Lane)',d:'Duck into the narrow smoky alley of "Piss Alley" in Shinjuku — skewers of yakitori and chicken hearts sizzling over charcoal, cold beer, and salaryman company. Pure Tokyo soul food experience.'},
+      {a:'TeamLab & Dinner at Toyosu',d:'After TeamLab, dine at one of Toyosu\'s excellent sushi restaurants — the area sits beside Tokyo\'s fresh fish market so quality is unmatched. The sunset over the bay from Toyosu Gurume Wharf is stunning.'},
+      {a:'Shibuya Sky Rooftop at Night',d:'The Shibuya Scramble Square rooftop observation deck offers the best elevated view of the famous crossing. Watch the light show unfold 229m above street level. Last entry 10:30 PM.'},
+      {a:'Kabuki Performance at Kabuki-za',d:'Catch an act of Japan\'s most celebrated theatrical tradition at the iconic Kabuki-za theatre in Ginza. Individual acts (single-act tickets) are affordable and require no full-night commitment.'},
+      {a:'Ramen Dinner in Ikebukuro',d:'Ikebukuro\'s ramen scene rivals even famous Fuunji. Try tsukemen (dipping ramen) at Fuunji Ikebukuro, or venture into the department store basement food halls for regional ramen varieties.'},
+      {a:'Night Walk in Yanaka Old Town',d:'Yanaka survived WWII and retains old Tokyo\'s atmosphere — old temples, wooden houses, local shotengai (shopping streets). The Yanaka Cemetery glows with lanterns in the evening.'},
+    ],
+    food:['Ramen (Tonkotsu, Shoyu, Miso)','Fresh Sushi & Sashimi','Yakitori Skewers','Tempura','Matcha Soft Serve','Takoyaki (Octopus Balls)','Wagyu Beef','Mochi & Dorayaki','Karaage (Fried Chicken)','Conveyor Belt Sushi'],
+    tips:[
+      {icon:'🚇',title:'IC Card is Essential',tip:'Get a Suica or Pasmo IC card from any airport vending machine. It works on all trains, subways, and buses, and even at many convenience stores. Far easier than buying individual tickets.'},
+      {icon:'💴',title:'Cash is King',tip:'While cashless is growing, many local restaurants, shrines, and small shops in Tokyo only accept cash. Always carry ¥5,000–¥10,000 in your wallet.'},
+      {icon:'📶',title:'Pocket WiFi / SIM',tip:'Rent a pocket WiFi at the airport or buy a data SIM card (IIJmio, Sakura Mobile). Unlimited data from ~¥800/day. Google Maps in Japanese is incredibly useful.'},
+      {icon:'👟',title:'Wear Comfortable Shoes',tip:'You will easily walk 15,000–25,000 steps per day in Tokyo. Also, you\'ll remove shoes at many traditional restaurants and ryokan — slip-on shoes are ideal.'},
+      {icon:'🗑️',title:'No Public Bins',tip:'Tokyo has almost no street-level rubbish bins (post-1995 sarin attack policy). Carry a small bag for your rubbish or hold onto it until you find a convenience store bin.'},
+      {icon:'🙇',title:'Etiquette Matters',tip:'Queue patiently (stand on one side of escalators), avoid loud phone calls on trains, and always bow slightly when thanked. Tipping is not practiced and can even cause offence.'},
+    ]
+  },
+  paris: {
+    name:'Paris, France', flag:'🇫🇷',
+    tagline:'The City of Light, love, and endless croissants',
+    themes:['Eiffel Tower & Trocadéro','Louvre & Art Day','Montmartre & Bohemian Paris','Versailles Day Trip','Le Marais & Jewish Quarter','Seine River & Île de la Cité','Champs-Élysées & Luxury','Saint-Germain & Left Bank'],
+    morning:[
+      {a:'Eiffel Tower at Sunrise',d:'Beat the queues by arriving before 9am for the Eiffel Tower\'s first lift. The morning light on the iron lattice and the misty Seine below is incomparably romantic. Book tickets online (eiffelTower.com) weeks ahead.'},
+      {a:'Louvre Museum Opening Rush',d:'The Louvre opens at 9am — be there for the doors to reach the Mona Lisa and Venus de Milo without the afternoon crush. The glass pyramid at dawn, with few tourists, is magical.'},
+      {a:'Sacré-Cœur & Montmartre Walk',d:'Climb the 270 steps to Sacré-Cœur\'s dome for the best panoramic view of Paris. Then wander artists\' studios in Place du Tertre, where painters have worked since the 19th century.'},
+      {a:'Versailles Gardens at Opening',d:'Louis XIV\'s palace opens at 9am — arrive early to see the Hall of Mirrors without crowds. The formal gardens with 50 fountains are best enjoyed in the morning cool before tour buses arrive.'},
+      {a:'Île de la Cité & Notre-Dame',d:'Notre-Dame\'s reconstruction is progressing — the exterior is already a moving sight. Explore the adjacent Sainte-Chapelle with its 1,113 stained glass panels, one of the greatest Gothic achievements.'},
+      {a:'Musée d\'Orsay Impressionists',d:'Housed in a converted Beaux-Arts railway station, the Orsay holds the world\'s greatest Impressionist collection: Monet\'s Water Lilies, Degas ballet dancers, Van Gogh\'s self-portrait. Open from 9:30am.'},
+      {a:'Luxembourg Gardens Morning Run',d:'The Palais du Luxembourg gardens are free and beloved by Parisians for morning walks, model sailboat sailing on the pond, and quiet bench reading. A glimpse of authentic Parisian daily life.'},
+      {a:'Le Marais Morning Stroll',d:'The historic Le Marais district — once Paris\'s Jewish quarter — comes alive from 10am with art galleries, boutiques, and the magnificent Place des Vosges, Paris\'s oldest planned square.'},
+    ],
+    afternoon:[
+      {a:'Champs-Élysées & Arc de Triomphe',d:'Walk the world\'s most famous avenue from Place de la Concorde to the Arc de Triomphe. Climb to the Arc\'s roof (free for under 26!) for the famous 12-avenue star view. The traffic roundabout below is legendary.'},
+      {a:'Centre Pompidou & Modern Art',d:'The Pompidou\'s radical inside-out architecture caused outrage in 1977 — now it\'s beloved. Home to Europe\'s largest modern art collection, plus a rooftop with spectacular city views. Free first Sunday of the month.'},
+      {a:'Seine River Cruise',d:'A Bateaux Mouches cruise from Pont de l\'Alma passes all of Paris\'s monuments in 70 minutes. Afternoon light is ideal for photography. Evening illuminated cruises are equally spectacular.'},
+      {a:'Covered Passages Shopping',d:'Duck into Paris\'s 19th-century glass-roofed arcades — Galerie Vivienne, Passage des Panoramas — for antique books, vintage stamps, tea shops, and atmospheric old Paris. Utterly unique.'},
+      {a:'Sainte-Chapelle & Conciergerie',d:'These two Gothic masterpieces on Île de la Cité include the Sainte-Chapelle\'s kaleidoscopic stained glass and the Conciergerie where Marie Antoinette was held before execution. Combined ticket available.'},
+      {a:'Père Lachaise Cemetery Walk',d:'The world\'s most visited cemetery holds Jim Morrison, Oscar Wilde, Édith Piaf, and Chopin. Peaceful, tree-lined cobblestone lanes make for a surprisingly beautiful and contemplative afternoon walk.'},
+      {a:'Palais Royal Gardens',d:'The arcaded garden adjacent to the Louvre has Buren\'s controversial striped columns, indie bookshops, antique jewelry stores, and chic restaurants. Less touristy and wonderfully Parisian.'},
+      {a:'Musée de l\'Orangerie',d:'Two elliptical rooms hold Monet\'s monumental Water Lilies — painted specifically for this space. The afternoon light through the frosted skylights illuminates the paintings exactly as Monet intended.'},
+    ],
+    evening:[
+      {a:'Sunset at Trocadéro',d:'The plaza at Trocadéro offers the postcard Eiffel Tower view — especially magical at sunset when the tower turns gold. Arrive 30 minutes before sunset and stay for the hourly light show (every hour after dark).'},
+      {a:'Dinner in Le Marais',d:'The Marais has Paris\'s best restaurant variety: traditional bistros, Jewish falafel on Rue des Rosiers, trendy neo-bistro cuisine, and vibrant gay bar scene. Try a prix-fixe (set menu) at a classic brasserie.'},
+      {a:'Moulin Rouge Cabaret Show',d:'The iconic windmill cabaret in Pigalle has run since 1889. Book the 9pm dinner-and-show package for the full Belle Époque experience — champagne, feathers, and high-kicking cancan dancers.'},
+      {a:'Wine Bar in Saint-Germain',d:'The Left Bank\'s Saint-Germain-des-Prés is Paris\'s intellectual heart. Sip Burgundy or Bordeaux at Café de Flore or Les Deux Magots — once haunts of Sartre, Simone de Beauvoir, and Hemingway.'},
+      {a:'Night Walk Along the Seine',d:'The quays of the Seine are a UNESCO World Heritage Site. An evening stroll from Notre-Dame to the Eiffel Tower along the river banks — passing bouquiniste bookstalls, bridges strung with love locks — is quintessential Paris.'},
+      {a:'Opera Garnier Evening Performance',d:'Charles Garnier\'s 1875 opera house — the inspiration for Phantom of the Opera — hosts ballet and opera. Evening performances in the gilded auditorium are a once-in-a-lifetime cultural event.'},
+      {a:'Montmartre Dinner & Caricatures',d:'Dine in Montmartre\'s vine-covered restaurants — this hilltop village retains a bohemian village feel despite its tourism. After dinner, have a caricature drawn in Place du Tertre by local artists.'},
+      {a:'Latin Quarter Night Walk',d:'The Latin Quarter around the Sorbonne buzzes with students, jazz bars, and crêpe stalls late into the night. The medieval Rue Mouffetard market street transforms into an outdoor café scene after dark.'},
+    ],
+    food:['Croissants & Pain au Chocolat','French Onion Soup','Steak Frites','Crêpes (Savoury & Sweet)','Macarons (Ladurée or Pierre Hermé)','Escargot (Snails)','Cheese Plate (Brie, Comté)','Duck Confit','Crème Brûlée','Falafel (Rue des Rosiers)'],
+    tips:[
+      {icon:'🚇',title:'Metro is Fastest',tip:'Paris Metro has 16 lines and is the quickest way between attractions. Buy a carnet (10-ticket book) or use a Navigo Découverte weekly pass (€30 for unlimited travel including RER to Versailles).'},
+      {icon:'💳',title:'Cards Accepted Widely',tip:'Unlike Japan, Paris is very card-friendly. Most restaurants, boulangeries, and shops accept Visa/Mastercard. Contactless is everywhere. Still carry €50 cash for small cafes and markets.'},
+      {icon:'⏰',title:'Museums Close on Mondays or Tuesdays',tip:'The Louvre is closed on Tuesdays. The Orsay is closed on Mondays. Plan accordingly to avoid disappointment. Many museums are free for under-26 EU residents.'},
+      {icon:'🥖',title:'Boulangerie Etiquette',tip:'Always greet with "Bonjour" when entering any shop — it\'s considered rude not to. Say "merci, au revoir" when leaving. Parisians greatly appreciate any attempt at French.'},
+      {icon:'🚨',title:'Pickpocket Awareness',tip:'Busy areas (Eiffel Tower, Louvre, Sacré-Cœur) attract pickpockets. Use a crossbody bag, keep phones in front pockets, and be alert around the Eiffel Tower crowds.'},
+      {icon:'🍽️',title:'Dining Hours',tip:'Parisians eat late: lunch 12:30–2pm, dinner 7:30–10pm. Many restaurants are closed between 3–7pm. "Plat du jour" (dish of the day) is always the best value at lunch.'},
+    ]
+  },
+  goa: {
+    name:'Goa, India', flag:'🇮🇳',
+    tagline:'Sun-soaked beaches, spiced seafood, and Portuguese soul',
+    themes:['North Goa Beaches','South Goa Serenity','Old Goa Heritage','Water Sports Day','Sunset Cruise & Nightlife','Spice Plantation Visit','Markets & Shopping','Relaxation & Wellness'],
+    morning:[
+      {a:'Baga & Calangute Beach Sunrise',d:'Watch the sun rise over the Arabian Sea from Baga Beach — the sky turns shades of orange and pink with fishing boats heading out to sea. Morning is the best time to swim before the beach gets crowded.'},
+      {a:'Basilica of Bom Jesus & Old Goa',d:'The UNESCO-listed Basilica holds the mortal remains of St. Francis Xavier — a marvel of Baroque architecture built in 1605. The adjacent Se Cathedral is the largest church in Asia. Arrive before 9am for peaceful exploration.'},
+      {a:'Anjuna Flea Market (Wed only)',d:'The original Anjuna flea market has run since the 1960s hippie era. Wednesday mornings are best — shop for silver jewelry, Kashmiri handicrafts, Rajasthani textiles, and hippy fashion amid the palms.'},
+      {a:'Palolem Beach Morning Walk',d:'South Goa\'s most beautiful crescent-shaped beach is pristine at 7am. Walk the full arc, photograph the colorful fishing boats, and have fresh coconut water from the vendors setting up for the day.'},
+      {a:'Spice Plantation Tour (Ponda)',d:'Take a morning tour through a working spice plantation in Ponda — guides explain cardamom, black pepper, vanilla, and nutmeg plants. Lunch of traditional Goan curry is usually included. Elephants on some farms!'},
+      {a:'Chapora Fort Sunrise Hike',d:'The ruined 17th-century Chapora Fort (Dil Chahta Hai fame) offers the best sunrise view over Vagator beach and the Arabian Sea. The 20-minute uphill walk is very rewarding for photographers.'},
+      {a:'Dolphin Watching Boat Trip',d:'Head to Candolim or Sinquerim beach at 7am for a dolphin-watching speedboat trip. Goa\'s coastal waters are home to spinner dolphins and you\'ll almost certainly spot them playing near the boat.'},
+      {a:'Agonda Beach Yoga Session',d:'Agonda in South Goa is one of India\'s most beautiful and peaceful beaches. Several yoga shalas offer sunrise sessions on the sand. After yoga, fresh fruit bowls and smoothies at the beachside shacks.'},
+    ],
+    afternoon:[
+      {a:'Water Sports at Baga/Calangute',d:'Baga beach operators offer parasailing, jet skiing, banana boat rides, and windsurfing. Prices are negotiable — compare operators before committing. Parasailing gives the best aerial view of Goa\'s coastline.'},
+      {a:'Fontainhas Latin Quarter Walk',d:'Panaji\'s Fontainhas is India\'s only surviving Latin quarter — narrow lanes of Portuguese-era tiled houses in yellow, blue, and terracotta, with tiny Catholic chapels. The Heritage Walk from Panaji city centre covers all highlights.'},
+      {a:'Dudhsagar Waterfall Trip',d:'India\'s second-tallest waterfall (310m) is stunning after monsoon (Oct–Feb is clear). Jeep tours from Mollem National Park take you through jungle trails to the four-tiered falls where you can swim in the pool below.'},
+      {a:'Casino Gaming Cruise (Panaji)',d:'Goa is one of India\'s few places with legal casinos. The floating casino ships on the Mandovi River offer entry packages with unlimited food, drinks, and gaming. Afternoon sessions are less crowded than evenings.'},
+      {a:'Mapusa Friday Market',d:'Goa\'s biggest local market happens every Friday — a brilliant chaos of fresh produce, Goan sausages, cashews, pickles, pottery, and fish. Go hungry and buy toddy (palm wine) from the local vendors.'},
+      {a:'Cabo de Rama Fort',d:'The southernmost of Goa\'s Portuguese forts sits on a dramatic cliff edge with views over endless coastline. Almost no tourists visit — you\'ll often have the entire fort to yourself. The old church inside is atmospheric.'},
+      {a:'Grand Island Snorkeling',d:'Boat trips to Grand Island off the Goa coast take 40 minutes and offer excellent snorkeling at Bat Island and Sail Rock — visibility up to 10m, with reef fish, rays, and occasionally turtles. Full day trips include lunch.'},
+      {a:'Panjim City Tour & Churches',d:'Panaji (Panjim) is one of India\'s most pleasant state capitals. Visit the Church of Our Lady of the Immaculate Conception (the white tiered church on coins), the Secretariat building, and the Mandovi riverside promenade.'},
+    ],
+    evening:[
+      {a:'Sunset Cruise on Mandovi River',d:'The Santa Monica and other cruise boats depart from Panaji\'s ferry wharf at 6pm for a 1-hour sunset cruise with Konkani folk music and dance performances. Cold Kingfisher beer and stunning golden sunsets included.'},
+      {a:'Night Market at Arpora (Sat)',d:'Every Saturday night, Arpora hosts a massive night market with 300+ stalls — live music stages, food from every Indian state, international cuisine, and handicrafts. The atmosphere is festive and vibrant from 6pm–midnight.'},
+      {a:'Baga Beach Tito\'s & Club Cubana',d:'Baga\'s legendary nightlife strip — Tito\'s Lane — comes alive after 10pm. Club Cubana on Arpora hill is India\'s most famous open-air club, carved into the hillside. Dress code enforced; entry ₹1500–2000 includes drinks.'},
+      {a:'Seafood Dinner at Fisherman\'s Wharf',d:'The Fisherman\'s Wharf restaurants along the Sal River in South Goa serve the freshest catch grilled to perfection. Try kingfish recheado, crab xec-xec, and prawn balchão with Goan red rice. Sunset deck views included.'},
+      {a:'Shacks at Anjuna Sunset Point',d:'The rocky headland at Anjuna\'s north end has a line of chilled-out beach shacks with bean bags, hammocks, trance music, and the most spectacular sunset views in North Goa. Carry enough cash — ATMs nearby.'},
+      {a:'Cultural Show at Kala Academy',d:'Panaji\'s premier cultural centre hosts Goan folk performances, Konkani theatre, and classical music events. Check their schedule for local performances — an authentic window into Goan culture away from the tourist trail.'},
+      {a:'Vagator & Chapora Chill Evening',d:'The twin beaches of Vagator — Big and Little — are Goa\'s most alternative scene. Beach cafes play psychedelic trance, campfires appear at dusk, and the famous Big Vagator rock formation glows at sunset.'},
+      {a:'Dinner at a Portuguese Casa',d:'Book a dinner at a heritage house restaurant in Old Goa or Fontainhas — families who\'ve cooked traditional Goan-Portuguese recipes for generations. Sorpotel, vindaloo, bebinca dessert, and local feni liquor.'},
+    ],
+    food:['Goan Fish Curry & Rice','Prawn Balchão','Vindaloo','Xacuti Chicken','Bebinca (Layered Coconut Cake)','Feni (Cashew Spirit)','Crab Xec-Xec','Goan Sausage Choris','Kingfish Recheado','Fresh Coconut Water'],
+    tips:[
+      {icon:'🛵',title:'Rent a Scooter',tip:'The best way to explore Goa is by rented scooter (₹300–400/day). International license not required for <100cc bikes. Major roads are good; use GPS. Petrol stations are plentiful.'},
+      {icon:'☀️',title:'Sun Protection is Critical',tip:'Goa\'s sun is intense even in winter. SPF 50+ sunscreen, sunglasses, and a beach umbrella are essential. Apply sunscreen 30 mins before beach time and reapply every 2 hours.'},
+      {icon:'💧',title:'Drink Only Bottled Water',tip:'Avoid tap water and ice in small establishments. Buy 5L bottled water bottles from any supermarket (₹50). Most good restaurants and hotels use purified water.'},
+      {icon:'🌊',title:'Rip Currents Warning',tip:'Some beaches (especially during Nov–Feb peak season) have strong currents. Always swim near lifeguard areas and heed red/yellow flag warnings. Drowning incidents occur every year.'},
+      {icon:'🦟',title:'Mosquito Protection',tip:'Carry mosquito repellent (Odomos is widely available locally). Especially important near mangroves and at dawn/dusk. Long sleeves help in the evenings at outdoor venues.'},
+      {icon:'💰',title:'Bargain at Markets',tip:'At flea markets and with beach vendors, bargaining is expected and accepted. Start at 50% of the asking price. Most vendors enjoy the negotiation. Fixed-price shops will say "fixed price".'},
+    ]
+  },
+  bali: {
+    name:'Bali, Indonesia', flag:'🇮🇩',
+    tagline:'Island of the Gods — rice terraces, temples, and transcendence',
+    themes:['Ubud Art & Temples','Seminyak Beaches & Sunset','Rice Terraces & Volcano','Temple Circuit','Uluwatu & Cliff Temples','Water Sports & Nusa Islands','Cooking Class & Culture','Wellness & Spa Day'],
+    morning:[
+      {a:'Tegallalang Rice Terrace at Dawn',d:'Arrive before 7am to have the UNESCO-listed rice terraces entirely to yourself. The terraced hillsides of brilliant green catch the morning mist — photography doesn\'t do it justice. Entrance is IDR 50,000.'},
+      {a:'Tanah Lot Temple Sunrise',d:'The iconic sea temple perched on a black volcanic rock offshore is most dramatic at sunrise when mists rise off the ocean. Low tide allows you to walk across to the base of the temple.'},
+      {a:'Mount Batur Volcano Sunrise Trek',d:'A 2-hour pre-dawn hike up Bali\'s active volcano (1,717m) rewards with a sunrise above the clouds. Guides are mandatory; most treks depart at 2am to summit for first light. Bring warm layers — it\'s cold.'},
+      {a:'Ubud Monkey Forest Morning',d:'The Sacred Monkey Forest Sanctuary is home to 700+ macaques amid ancient temple ruins. Morning visits (8am opening) are cooler and more atmospheric. Don\'t carry food or shiny objects — the monkeys are bold.'},
+      {a:'Pura Besakih Mother Temple',d:'Bali\'s holiest and largest temple complex on the slopes of Mount Agung. Arrive at 8am before tour buses. Wear a sarong (provided at entrance). The volcanic backdrop and dozens of tiered shrines are breathtaking.'},
+      {a:'Jatiluwih Rice Terraces Walk',d:'Less visited than Tegallalang but UNESCO-listed, Jatiluwih\'s terraces stretch for 600 hectares. Morning light on the curved paddies is incredible. Walking trails through active rice paddies are well marked.'},
+      {a:'Campuhan Ridge Walk',d:'A free 9km ridge walk through highland jungle above Ubud — best at 6–8am before the heat. The trail passes through isolated Subak (traditional irrigation) rice paddies and offers views of two river valleys.'},
+      {a:'Pura Lempuyang "Gates of Heaven"',d:'The viral photo spot — twin candi bentar gates framing Agung volcano — requires arriving before 7am to avoid the queue. Photography is managed by temple attendants. The entire temple complex is genuinely sacred and beautiful.'},
+    ],
+    afternoon:[
+      {a:'Ubud Art Market & Palace',d:'The Ubud Art Market sells Balinese textiles, woodcarvings, silver jewelry, and paintings at negotiable prices. The adjacent Royal Palace (Puri Saren) is free to enter and hosts evening Kecak dances on the palace stage.'},
+      {a:'Kuta & Seminyak Beach Afternoon',d:'Bali\'s famous surf beaches — Kuta for beginners (surf schools everywhere), Seminyak for style. Afternoon offshore winds create ideal surf conditions. Rent a board for the afternoon at Rip Curl or Billabong schools.'},
+      {a:'ARMA Museum & Agung Rai Museum',d:'Ubud has exceptional art museums showing traditional Balinese, modern Indonesian, and international works. ARMA also hosts gamelan performances and traditional dance workshops in the afternoon.'},
+      {a:'Uluwatu Cliff Walk',d:'Perched 70m above the Indian Ocean on Bali\'s southern tip, Pura Uluwatu is accessed via a cliff-edge forest path populated with cheeky monkeys. Hold your sunglasses tight! Arrive by 4pm for the Kecak show setup.'},
+      {a:'Nusa Penida Snorkeling',d:'A 45-minute fast boat from Sanur brings you to Nusa Penida — home to manta ray cleaning stations, crystal-clear bays at Kelingking and Crystal Bay, and Mola-Mola (ocean sunfish) sightings June–October.'},
+      {a:'Balinese Cooking Class',d:'Half-day cooking classes (book via your hotel or online) typically visit a morning market, then teach you to make sate lilit, nasi goreng, lawar, and bebek betutu in a traditional compound kitchen. Absolutely worth it.'},
+      {a:'Tirta Empul Holy Spring Temple',d:'Balinese Hindus come to this 1,000-year-old spring temple to undergo melukat — ritual purification by bathing in the sacred spring waters. Respectful visitors can participate. Deeply moving and spiritually powerful.'},
+      {a:'Waterbom Bali Water Park',d:'Asia\'s top-ranked water park in Kuta has 16 slides including Python (the world\'s most terrifying tube slide), lazy river, and a kids\' area. Ideal on hot afternoons — book online for cheaper rates.'},
+    ],
+    evening:[
+      {a:'Kecak Fire Dance at Uluwatu',d:'Every evening at 6pm, 100+ male performers chant the hypnotic "chak-a-chak" in concentric circles around a fire, retelling the Ramayana epic — set against the cliff-edge ocean backdrop. One of Bali\'s unmissable experiences.'},
+      {a:'Seminyak Sunset at Ku De Ta',d:'Ku De Ta, La Plancha, and Potato Head Beach Club line Seminyak\'s shore for legendary Bali sunsets. Bean bags on the sand, Bintang beer, and the sky turning from gold to crimson over the Indian Ocean.'},
+      {a:'Jimbaran Seafood BBQ on the Beach',d:'Dozens of seafood BBQ restaurants set up tables directly on Jimbaran Bay sand. Choose your fish, crab, prawn, and lobster fresh from ice buckets — grilled over coconut husks and served with sambal. Sunset dining at its finest.'},
+      {a:'Ubud Night Walk & Warungs',d:'Ubud\'s Jalan Hanoman and Monkey Forest Road light up with warungs (local restaurants) selling babi guling (suckling pig), ayam betutu (slow-cooked chicken), and satay. Live gamelan music drifts from temple courtyards.'},
+      {a:'Legian Street Night Market',d:'Kuta\'s Legian street area transforms into a bustling night market after dark — Bintang singlets, sarongs, sunglasses, and handmade bracelets at bargain prices. Street food carts serve mie goreng, martabak, and fresh juice.'},
+      {a:'Spa & Traditional Massage Evening',d:'Bali is world-famous for wellness. An evening 90-minute Balinese massage (strong, stretching, with hot stone option) at a mid-range spa costs IDR 150,000–250,000 (€9–15). Book from your hotel or walk in to any street spa.'},
+      {a:'Alaya Resort Romantic Dinner',d:'Several of Ubud\'s iconic resorts — Alaya, Komaneka, Four Seasons Sayan — offer non-guest dinner reservations in breathtaking jungle settings above river gorges. Reserve ahead for special occasions.'},
+      {a:'Bali Swing Sunset Experience',d:'The Instagram-famous swings suspended above jungle valleys operate until sunset. The Zen Hideaway and Bali Swing in Ubud offer multiple swing heights including one 78m above the gorge floor. Absolutely exhilarating.'},
+    ],
+    food:['Nasi Goreng (Fried Rice)','Mie Goreng (Fried Noodles)','Babi Guling (Suckling Pig)','Satay Lilit','Gado-Gado (Peanut Sauce Salad)','Bebek Betutu (Slow Duck)','Lawar (Spiced Minced Meat)','Fresh Coconut & Bintang Beer','Pisang Goreng (Banana Fritters)','Dadar Gulung (Pandan Crepe)'],
+    tips:[
+      {icon:'🛵',title:'Scooter or Driver Needed',tip:'Bali has no reliable public transport. Rent a scooter (IDR 60,000–80,000/day) or hire a private driver for the day (IDR 600,000–800,000). Gojek and Grab apps work well in Kuta/Seminyak but are restricted in Ubud.'},
+      {icon:'👘',title:'Temple Dress Code',tip:'A sarong and sash are required at every temple. Menstruating women are asked not to enter temples (per Hindu belief). Sarongs are provided or can be rented at temple entrances for IDR 10,000–20,000.'},
+      {icon:'💸',title:'Carry Cash (Rupiah)',tip:'Many small warungs, markets, and temple entrances are cash only. ATMs in Kuta and Ubud are plentiful. Beware dynamic currency conversion scams — always choose to be charged in IDR.'},
+      {icon:'🌡️',title:'Heat & Hydration',tip:'Bali is hot and humid year-round (28–33°C). Drink at least 3L of water daily. Add electrolyte sachets if trekking. Avoid midday sun between 11am–2pm for strenuous outdoor activities.'},
+      {icon:'🙏',title:'Respect Offerings',tip:'Canang sari (small woven offerings with flowers and incense) are placed everywhere daily. Step around them — never over or on them. It\'s genuinely disrespectful and the Balinese are deeply religious.'},
+      {icon:'🦟',title:'Dengue Fever Prevention',tip:'Use DEET-based mosquito repellent (50% concentration). Dengue fever has no vaccine — prevention is key. Wear long sleeves at dawn and dusk. Accommodation with screens/air-con reduces exposure.'},
+    ]
+  },
+  dubai: {
+    name:'Dubai, UAE', flag:'🇦🇪',
+    tagline:'Where the desert meets the skyline of tomorrow',
+    themes:['Burj Khalifa & Downtown','Desert Safari & Dunes','Old Dubai & Gold Souk','Beach & Palm Jumeirah','Mall & Indoor Skiing','Miracle Garden & Parks','Marina & JBR Waterfront','Luxury Experience Day'],
+    morning:[
+      {a:'Burj Khalifa At the Top (Sunrise)',d:'Book the 124th or 148th floor observation deck at sunrise (6:30am) — you\'ll be above the morning clouds with a 360° view of the desert, sea, and city below. Book at burjkhalifa.ae weeks ahead to avoid sellouts.'},
+      {a:'Dubai Creek & Old Souk Abra Ride',d:'Cross Dubai Creek on a wooden abra (water taxi) for AED 1 — one of the world\'s great budget experiences. Explore the Gold Souk (800+ shops of 24-karat gold) and Spice Souk before the heat of the day.'},
+      {a:'Miracle Garden Early Morning',d:'The world\'s largest natural flower garden (150 million blooms!) is best before 10am — cooler temperatures, beautiful morning light, fewer crowds. Open October–April. The Disney-themed floral sculptures are extraordinary.'},
+      {a:'Jumeirah Mosque Tour',d:'One of Dubai\'s most beautiful mosques offers free guided tours for non-Muslims on Saturday and Sunday mornings at 10am — led by the Sheikh Mohammed Centre for Cultural Understanding. Includes Q&A and refreshments.'},
+      {a:'Al Fahidi Historical Neighbourhood',d:'Dubai\'s best-preserved old quarter with wind-tower architecture dating to the 1900s. The Dubai Museum, art galleries, and the XVA Art Hotel are all within a short walking distance of Al Fahidi station.'},
+      {a:'Hatta Mountain Hike',d:'A 90-minute drive into the Hajar Mountains reaches Hatta — Dubai\'s highland escape. Morning hikes in the wadis (gorges) are stunning; the Hatta Heritage Village recreates traditional mountain life.'},
+      {a:'Dubai Frame Morning Visit',d:'The 150m picture frame structure bridges old and new Dubai — one side shows the historical city, the other shows the modern skyline. The glass-floored walkway at the top is thrillingly vertiginous.'},
+      {a:'Kite Beach & Sunrise Swimming',d:'Kite Beach on Jumeirah is Dubai\'s most beautiful public beach for sunrise. Free entry, pristine sand, and the Burj Al Arab visible in the background. Beach volleyball courts and excellent breakfast cafes line the corniche.'},
+    ],
+    afternoon:[
+      {a:'Desert Safari with Dune Bashing',d:'Afternoon desert safaris (3pm pickup) include 45 minutes of heart-pounding dune bashing in 4WDs, sandboarding, camel riding, henna, and a Bedouin camp dinner under the stars. Book through licensed operators.'},
+      {a:'Dubai Mall & Aquarium',d:'The world\'s largest mall contains the Dubai Aquarium (with a walk-through underwater tunnel and shark dive option), an indoor ice rink, a VR park, and the Dubai Fountain show outside (every 30 mins from 6pm).'},
+      {a:'Palm Jumeirah Monorail & Hotel Tour',d:'The Palm monorail runs from Atlantis the Palm to Gateway station. Walk around the crescent boardwalk, admire the private villas, and visit the Atlantis Aquaventure water park or just the lobby. The Palm offers the best Burj Al Arab views.'},
+      {a:'Ski Dubai Indoor Slope',d:'Inside Mall of the Emirates is a genuine ski slope with real snow — 5 runs, a chairlift, tobogganing, and a Snow Park penguin encounter. Rental gear is included. Bizarrely fun in 35°C desert heat.'},
+      {a:'Global Village Cultural Park',d:'Open October–April, Global Village has pavilions from 90+ countries selling food, crafts, and cultural shows. Try Turkish baklava, Brazilian churrasco, and Indian street food all in one afternoon.'},
+      {a:'Dhow Cruise Creek',d:'Traditional wooden dhow boats offer 2-hour afternoon cruises along Dubai Creek with buffet lunch, air conditioning, and live Tanoura spinning dance performance. Passes all the old souks and the contrast of old/new Dubai.'},
+      {a:'Dubai Marina Walk',d:'The Dubai Marina is a stunning 3km promenade circling a yacht-filled marina with 200 skyscrapers looming above. Afternoon is ideal for boat trips, waterfront cafes, and watching the sun lower behind JBR beach.'},
+      {a:'IMG Worlds of Adventure',d:'One of the world\'s largest indoor theme parks — 4 zones: Marvel (Avengers rides), Cartoon Network (Ben 10, etc.), Lost Valley (dinosaur zone), and Haunted Hotel. Full day needed; best on weekday afternoons.'},
+    ],
+    evening:[
+      {a:'Dubai Fountain & Burj Khalifa Light Show',d:'The world\'s largest choreographed fountain shoots water 150m high to classical and Arabic music — free to watch from Dubai Mall lakeside. Followed by the Burj Khalifa\'s nightly LED light show on the tower facade.'},
+      {a:'Rooftop Dinner at COYA or Zuma',d:'Dubai\'s rooftop restaurant scene is world-class. COYA Peruvian, Zuma Japanese, and Nobu at Atlantis all offer stunning city or ocean views. Dress code is smart-casual; reserve 2+ weeks ahead.'},
+      {a:'La Mer Beach Night',d:'Dubai\'s beachside district has 150+ restaurants, street art murals, a waterpark, and the Laguna water park. The evening ocean breeze makes it one of Dubai\'s best after-dark areas, popular with both tourists and families.'},
+      {a:'Old Dubai Night Walk',d:'Al Seef on Dubai Creek has been restored to recreate the 1900s creek-side trading era — teak-lattice houses, abra rides at night, and open-air restaurants serving Emirati food under fairy lights. Magical and authentic.'},
+      {a:'Luxury Desert Camp Overnight',d:'Premium desert camps (Al Maha, Bab Al Shams, Sonara Camp) offer private tents with plunge pools, private chef Bedouin dinners, stargazing with telescopes, and total silence. The most unforgettable Dubai night possible.'},
+      {a:'JBR The Walk Evening Stroll',d:'Jumeirah Beach Residences\' 1.7km pedestrian promenade comes alive at night — street performers, outdoor cafes, shisha bars, and direct beach access. AIN Dubai (world\'s largest observation wheel) is lit up spectacularly.'},
+      {a:'Arabic Hammam & Spa Evening',d:'Traditional Arabic hammam (steam bath + full body scrub + oil massage) at Talise Spa or N\'Veda Spa costs AED 300–500 for a full 2-hour experience. A genuine cultural tradition and deeply relaxing.'},
+      {a:'Dhow Cruise Marina Dinner',d:'Evening dhow cruises on Dubai Marina offer international buffet dinner, air conditioning, and the stunning view of 200 illuminated skyscrapers reflecting in the water. Departs 8:30pm from Dubai Marina Mall.'},
+    ],
+    food:['Al Harees (Wheat & Meat Slow Cook)','Shawarma','Machboos (Spiced Rice & Meat)','Luqaimat (Honey Dumplings)','Camel Milk Ice Cream','Hummus & Mezze Platter','Kunafa (Cheese Pastry)','Fresh Dates & Arabic Coffee','Grilled Hammour Fish','Balaleet (Sweet Vermicelli)'],
+    tips:[
+      {icon:'🌡️',title:'Heat Strategy is Essential',tip:'Dubai summer (May–September) sees 40–50°C. Plan outdoor activities before 10am and after 5pm only. Malls, museums, and indoor attractions are the afternoon option. Drink 3–4L of water daily.'},
+      {icon:'👗',title:'Dress Conservatively',tip:'At souks, mosques, and government buildings: women cover shoulders and knees; men avoid shorts. Beach attire is fine on the beach only. The UAE is tolerant but respectful dress is always appreciated.'},
+      {icon:'🚕',title:'Use Careem or Taxis',tip:'Uber and Careem (regional equivalent) work seamlessly and are metered and affordable. Dubai Metro covers the major tourist corridor from Airport to Mall of Emirates. Taxis are cheap by Western standards.'},
+      {icon:'📸',title:'Photography Rules',tip:'Dubai has strict photography rules: never photograph government buildings, military installations, or people (especially women) without permission. The Burj Khalifa\'s interior has its own photography rules per zone.'},
+      {icon:'🍺',title:'Alcohol Rules',tip:'Alcohol is available only in hotels, licensed restaurants, and dedicated liquor stores. Public drinking is illegal. During Ramadan, eating, drinking, and smoking in public during daylight hours is prohibited for all — including tourists.'},
+      {icon:'💳',title:'Cards Work Everywhere',tip:'Dubai is highly cashless — Visa and Mastercard work in virtually every establishment. Apple Pay and contactless are universal. Keep AED 100–200 for small souk purchases where cash gets better prices.'},
+    ]
+  },
+  london: {
+    name:'London, United Kingdom', flag:'🇬🇧',
+    tagline:'History, theatre, and the world\'s most diverse city',
+    themes:['Westminster & Royalty','British Museums Day','South Bank & Tate Modern','East London & Markets','Hampstead & North London','Royal Parks & Gardens','Day Trip to Bath/Oxford','Theatre & West End Night'],
+    morning:[
+      {a:'Tower of London Opening',d:'The 1,000-year-old fortress opens at 9am — arrive for first entry to see the Crown Jewels (including the 530-carat Cullinan Diamond) without queuing. The Beefeater guards\' free tours are the highlight — funny and informative.'},
+      {a:'Buckingham Palace Changing of the Guard',d:'The Changing of the Guard ceremony happens at 11am (daily in summer, alternating days in winter). Arrive by 10:15am at the Victoria Memorial for the best view. The 45-minute ceremony is genuinely magnificent pageantry.'},
+      {a:'British Museum Early Opening',d:'The British Museum opens at 10am with free entry to the Rosetta Stone, Elgin Marbles, Egyptian Mummies, and Lewis Chessmen. The Great Court\'s glass roof is one of London\'s most spectacular interior spaces.'},
+      {a:'Borough Market Morning',d:'London\'s most famous food market (open Tue–Sat) is best at 10–11am before the lunch crowd. Sample Montgomery Cheddar, Colombian coffee, Ethiopian injera, and the legendary Monmouth Coffee. Arrive hungry.'},
+      {a:'Columbia Road Flower Market (Sun)',d:'Every Sunday morning 8am–3pm, this East London street transforms into an explosion of colour — hundreds of stalls selling plants, flowers, and bulbs. The surrounding café scene and indie boutiques are equally excellent.'},
+      {a:'Hyde Park Morning Jog & Serpentine',d:'Hyde Park\'s 350 acres include the Serpentine Lake (outdoor swimming in summer!), Diana Memorial Fountain, and Speaker\'s Corner where passionate speakers address crowds on Sunday mornings. A true London institution.'},
+      {a:'St Paul\'s Cathedral Morning Service',d:'Christopher Wren\'s masterpiece holds free morning services weekdays at 7:30am and 8am. The Whispering Gallery (inside the dome) has extraordinary acoustics — whisper and your voice carries 34 metres to the other side.'},
+      {a:'Portobello Road Market (Sat)',d:'Notting Hill\'s famous antiques market peaks on Saturday mornings with vintage watches, Edwardian jewelry, old maps, and rare books. The food market section south of Westbourne Grove has excellent street food.'},
+    ],
+    afternoon:[
+      {a:'Tate Modern & Millennium Bridge',d:'The converted Bankside power station holds Europe\'s greatest modern art collection — free entry. Walk across the Millennium Bridge (the "wobbly bridge" from Harry Potter) for the iconic view of St Paul\'s across the Thames.'},
+      {a:'Hampton Court Palace Tour',d:'Henry VIII\'s Tudor palace is 35 minutes by train from Waterloo. The Great Hall, Chapel Royal, medieval kitchens, and the famous hedge maze cover 60 acres of grounds. April–October is ideal with the flower gardens in bloom.'},
+      {a:'Victoria & Albert Museum',d:'The world\'s largest decorative arts museum is free — 145 galleries of fashion, jewelry, furniture, and design from 5,000 years of history. The Cast Courts with full-size replica Trajan\'s Column is jaw-dropping.'},
+      {a:'East London Street Art Walk',d:'Shoreditch and Brick Lane have some of the world\'s greatest street art — Banksy originals, Faith 47, Stik\'s stick figures, and weekly new pieces. The Old Truman Brewery hosts vintage markets and craft beer events.'},
+      {a:'Greenwich Royal Observatory',d:'Stand on the Prime Meridian Line (0° longitude) and visit the Royal Observatory where longitude was standardized. Stunning views of the City and Canary Wharf skyline from the hill. Cutty Sark tea clipper ship nearby.'},
+      {a:'Kew Gardens Afternoon Walk',d:'The Royal Botanic Gardens UNESCO site has a Palm House (Victorian glass greenhouse), Treetop Walkway, and 50,000 plant species. The Japanese Gateway and bamboo grove are particularly beautiful.'},
+      {a:'Oxford Street & Carnaby Shopping',d:'Oxford Street has 300+ shops including the flagship Selfridges and John Lewis. Carnaby Street nearby is more independent and trendy — Liberty of London (1875) is a must-see even if you don\'t buy.'},
+      {a:'Churchill War Rooms',d:'Churchill\'s underground bunker — where WWII was directed — is preserved exactly as it was in 1945. The adjacent Churchill Museum is one of London\'s most innovative, using dramatic multimedia to tell his story.'},
+    ],
+    evening:[
+      {a:'West End Theatre Show',d:'London\'s theatre scene rivals Broadway. From Phantom of the Opera (Her Majesty\'s) to Hamilton (Victoria Palace) to Comedy at the Palladium — book official tickets at the venue box office or TKTS booth in Leicester Square for same-day discounts.'},
+      {a:'Dinner in Soho',d:'Soho is London\'s most cosmopolitan dining quarter — Yotam Ottolenghi\'s restaurant, Hawksmoor steakhouses, Bar Italia espresso since 1949, and Chinatown right on the doorstep. Restaurants on Frith, Greek, and Dean Streets are London institutions.'},
+      {a:'Rooftop Bar at Sky Garden',d:'The free Sky Garden observation deck at 20 Fenchurch (the "Walkie Talkie" building) must be booked online 3 weeks ahead. 360° views of Tower Bridge and the City with upmarket bar service. Best at sunset.'},
+      {a:'Pub Crawl in Southwark',d:'South London\'s Southwark has London\'s most historic pubs: The George Inn (mentioned by Dickens), Anchor Bankside (where Samuel Pepys watched the Great Fire of 1666), and The Mudlark by the river. CAMRA real ales throughout.'},
+      {a:'Shakespeare\'s Globe Evening Play',d:'The reconstructed 1599 Globe Theatre on Bankside stages Shakespeare\'s plays in the open-air groundling pit for just £5 — stand with the original audiences did. Experience rain, laughter, and Tudor atmosphere.'},
+      {a:'Shard Night Views',d:'The Shard\'s 68th floor observation deck (244m) offers the only elevated 360° night view of London. Entry is £25–32 — book online to save. The illuminated Thames, Tower Bridge, and City skyline are extraordinary.'},
+      {a:'Notting Hill Evening Walk',d:'The pastel-coloured houses of Notting Hill look magical at dusk — the Electric Cinema (London\'s oldest) shows films on leather armchairs. The Ledbury and Julie\'s Restaurant are neighborhood institutions for romantic dinners.'},
+      {a:'Covent Garden Evening Buskers',d:'Covent Garden\'s Victorian market building hosts auditioned street performers — opera singers, acrobats, and jazz quartets — until 10pm. Surrounded by restaurants and the Royal Opera House. Free and always excellent.'},
+    ],
+    food:['Fish & Chips (with mushy peas)','Full English Breakfast','Chicken Tikka Masala','Afternoon Tea (Claridge\'s or Fortnum\'s)','Pie & Mash','Cornish Pasty','Sticky Toffee Pudding','Sunday Roast','Pho & Ramen (Soho)','Borough Market Cheese Toastie'],
+    tips:[
+      {icon:'🚇',title:'Oyster Card is Essential',tip:'Get an Oyster card from any Tube station or use your contactless bank card directly — same price. Never buy single paper tickets (3x more expensive). Daily capping means you\'ll never pay more than the day Travelcard price.'},
+      {icon:'☔',title:'Layer Up for Weather',tip:'London weather is famously unpredictable — sunshine and rain in the same hour. Always carry a light waterproof jacket. The good news: rarely extreme hot or cold. Average is 15–20°C in summer.'},
+      {icon:'🆓',title:'Free World-Class Museums',tip:'The British Museum, V&A, Natural History Museum, Science Museum, National Gallery, and Tate Modern are ALL completely free. London offers more free world-class culture than any city on earth.'},
+      {icon:'🚌',title:'Night Bus is Great',tip:'After midnight, the Night Tube runs Friday and Saturday only. Other nights, Night Bus routes cover all areas — free with Oyster and far more atmospheric than the Underground. Look for N-prefixed routes.'},
+      {icon:'🎭',title:'Book Theatre Early',tip:'Hamilton, Les Misérables, and top shows sell out months ahead. Buy from official venue websites (no booking fees) or Tkts.co.uk for same-day discounts up to 50%. Avoid third-party tout sites.'},
+      {icon:'💷',title:'Tipping Culture',tip:'10% in restaurants is appreciated but not obligatory. Check if service charge is already included (often 12.5%). Never tip in pubs (just buy the bartender a drink if you like!). Taxi drivers appreciate rounding up.'},
+    ]
+  },
+  newYork: {
+    name:'New York City, USA', flag:'🇺🇸',
+    tagline:'The city that never sleeps — and never stops amazing',
+    themes:['Manhattan Skyline & Central Park','Brooklyn & Bridges','Times Square & Broadway','Museum Mile & Upper East Side','Greenwich Village & Soho','Statue of Liberty & Lower Manhattan','Food & Markets Tour','Rooftops & Nightlife'],
+    morning:[
+      {a:'Central Park Sunrise Walk',d:'Enter at Engineer\'s Gate (90th St) for the sunrise run loop or Bethesda Fountain area for golden hour reflections on The Lake. The Conservatory Garden in the northeast corner is breathtaking in spring bloom.'},
+      {a:'Brooklyn Bridge Walk at Dawn',d:'Cross the iconic suspension bridge on foot from Manhattan\'s City Hall side — takes 30 minutes. Dawn reveals the bridge\'s Gothic towers without the crowds that swarm by 9am. Views of the skyline are the stuff of movies.'},
+      {a:'High Line Opening Walk',d:'The elevated park on a disused railway line opens at 7am — morning is by far the quietest and most peaceful time. Hudson Yards architecture and the wildflower garden sections are stunning in early light.'},
+      {a:'Chelsea Market Breakfast',d:'New York\'s most celebrated indoor food market opens at 7am with exceptional bagels, Blue Bottle Coffee, Mokbar Korean breakfast ramen, and the Lobster Place\'s clam chowder. A feast for breakfast.'},
+      {a:'DUMBO Brooklyn Morning',d:'Down Under the Manhattan Bridge Overpass has the quintessential NY bridge photo at Washington & Water Streets. The Jane\'s Carousel and Brooklyn Bridge Park are magical at 8am with commuters and dog walkers.'},
+      {a:'Metropolitan Museum Early Entry',d:'The Met opens at 10am — arrive at 9:50am for the Rooftop Garden, Egyptian Temple of Dendur, Impressionist galleries, and the Arms & Armor hall without the school-group crowds of midday.'},
+      {a:'Staten Island Ferry Sunrise',d:'The Staten Island Ferry is completely free and runs 24/7, passing within 800m of the Statue of Liberty. The sunrise from the upper deck looking back at the Manhattan skyline is as good as any paid observatory.'},
+      {a:'Smorgasburg Food Market (Sat/Sun)',d:'Brooklyn\'s enormous outdoor food market at Prospect Park (Sat) and East River (Sun) has 100 vendors. The Ramen Burger originated here; try Japanese tamago sandwiches, Bolivian saltenas, and NYC cheesecake.'},
+    ],
+    afternoon:[
+      {a:'Times Square & Theater District Walk',d:'Go to Times Square between 2–4pm when it\'s busy but before the crush of evening show crowds. The TKTS red steps booth sells same-day Broadway tickets at 20–50% off from noon onward. Worth queuing for Hamilton or Lion King.'},
+      {a:'Museum of Modern Art (MoMA)',d:'Starry Night, Campbell\'s Soup Cans, The Persistence of Memory — MoMA\'s collection includes the 20th century\'s most famous paintings. Friday evenings are free. The Abby Aldrich Rockefeller Sculpture Garden is peaceful.'},
+      {a:'Greenwich Village & Washington Square',d:'NYU students, street chess players, buskers, and the famous fountain — Washington Square Park is free NYC entertainment. Walk west for West Village\'s charming cobblestone streets and celebrity chef restaurants.'},
+      {a:'One World Observatory',d:'The 102nd floor of the World Trade Center (541m) offers 360° views on clear days extending 50 miles. The "See Forever" theatre previews your view before the elevator arrives. Morning or late afternoon for best visibility.'},
+      {a:'Williamsburg Brooklyn Food Walk',d:'Bedford Avenue in Williamsburg is Brooklyn\'s hippest strip — Dough Donuts (rose hibiscus glaze!), Roberta\'s Pizza, Maison Premiere oyster bar, and Peter Luger Steak House. An afternoon of legendary NYC eating.'},
+      {a:'Coney Island Afternoon',d:'The subway ride to Coney Island takes 50 minutes and costs $2.90. The historic Wonder Wheel, Nathan\'s Famous hot dogs since 1916, the Brooklyn Cyclones baseball game, and the boardwalk are a quintessential NYC afternoon.'},
+      {a:'5th Avenue & Rockefeller Center',d:'The midtown stretch of 5th Avenue has the New York Public Library lions, Saks Fifth Avenue, and the Rockefeller Center (Top of the Rock observatory). The Atlas Statue and GE Building art deco lobby are underrated highlights.'},
+      {a:'The Vessel & Hudson Yards',d:'Hudson Yards\' controversial climbable honeycomb sculpture (The Vessel) has reopened with new safety rules. The Edge observation deck (100th floor, angled glass floor) offers the best elevated city view. Sunset timing is ideal.'},
+    ],
+    evening:[
+      {a:'Broadway Show',d:'New York\'s Broadway has 40+ active theatres. TKTS same-day discount booth is on 47th & Broadway. For premium shows, book directly from the theatre website. Standing room tickets (SRO) go on sale morning-of at box office from $27.'},
+      {a:'Dinner in the East Village',d:'The East Village is NYC\'s most exciting dining neighborhood — Veselka Ukrainian diner (open 24hrs), Momofuku\'s Noodle Bar, Ippudo NYC ramen, and dozens of Japanese izakayas on "Ramen Row". Cheap and world-class simultaneously.'},
+      {a:'Empire State Building Night',d:'The 86th floor outdoor deck of the Empire State Building — illuminated in colored lights nightly — is New York\'s most romantic evening experience. Night photography is exceptional. Avoid weekends; Tuesday/Wednesday least crowded.'},
+      {a:'Jazz at the Village Vanguard',d:'The Village Vanguard on 7th Avenue South has hosted every jazz giant since 1935 — Miles Davis, Coltrane, Bill Evans. Still hosting nightly shows at 8pm and 10pm. Two-drink minimum. Reservations strongly recommended.'},
+      {a:'Rooftop Bar at 230 Fifth',d:'NYC\'s largest outdoor rooftop bar in Midtown has heated igloos in winter, open-air terraces in summer, and unbeatable Empire State Building views. No reservations needed; coats provided in winter. Truly unforgettable.'},
+      {a:'Grimaldi\'s Pizza Under the Bridge',d:'Grimaldi\'s original coal-fired pizza under the Brooklyn Bridge has had lines since 1990. But nearby Juliana\'s Pizza (opened by the original owners after being pushed out) is equally excellent and less queued. Best NY pizza debate material.'},
+      {a:'Night Walk on the High Line',d:'The High Line is open until 10pm and is hauntingly beautiful at night — city lights from the Hudson Yards towers, glowing street art, and the intimate elevated walkway above the quiet Meatpacking District streets.'},
+      {a:'Speakeasy Bar Crawl',d:'NYC\'s craft cocktail scene is world-class. Start at PDT (Please Don\'t Tell — enter through a phone booth in a hot dog shop), then Death & Company, Employees Only, and the NoMad Bar. Reserve ahead for PDT (max 30 guests).'},
+    ],
+    food:['NYC Bagel with Lox & Cream Cheese','NYC-style Pizza (Grimaldi\'s, Joe\'s)','Pastrami Sandwich (Katz\'s Deli)','Cheesecake (Junior\'s)','Ramen (Ippudo, Ivan Ramen)','Halal Cart Chicken & Rice','Lobster Roll','Cronuts (Dominique Ansel)','Buffalo Wings','Black & White Cookie'],
+    tips:[
+      {icon:'🚇',title:'Subway is the Way',tip:'The NYC subway runs 24/7 on all lines. Use a MetroCard or tap your contactless card/phone. Single ride is $2.90; weekly unlimited pass is $34. Download the MTA app or Citymapper for real-time directions.'},
+      {icon:'🚶',title:'Walk More Than You Think',tip:'Midtown\'s grid means walking is often faster than any transport. From Times Square to Central Park is 15 min walk; Times Square to Brooklyn Bridge is 35 min. NY is very walkable and the street life is the experience.'},
+      {icon:'🍕',title:'Eat Like a Local',tip:'The best meals in NYC are rarely in restaurants with canopies over the sidewalk. Look for delis, Dominican lunch counters, food courts under office buildings, and ethnic neighborhood restaurants for authentic and cheap eats.'},
+      {icon:'💳',title:'Card Everywhere, Cash for Tips',tip:'Cards work everywhere in NYC. However, carry small bills for tipping: taxi drivers (15–20%), restaurants (20% standard), bellhops, and valets. Hotel service typically has gratuity guidelines. Tipping culture is strong.'},
+      {icon:'🚨',title:'Safety Awareness',tip:'NYC is statistically very safe but petty theft (phone snatching) happens on the subway. Keep your phone in your pocket when not using it. Avoid empty subway cars late at night — position yourself near the conductor\'s car.'},
+      {icon:'⏰',title:'Book Attractions in Advance',tip:'Statue of Liberty ferry, 9/11 Memorial Museum, Top of the Rock, and One World Observatory all require timed-entry tickets — book online 1–2 weeks ahead especially in summer. Last-minute is possible but risky.'},
+    ]
+  },
+  rome: {
+    name:'Rome, Italy', flag:'🇮🇹',
+    tagline:'The Eternal City — where every cobblestone tells a story',
+    themes:['Vatican & Sistine Chapel','Colosseum & Roman Forum','Trastevere & Baroque Rome','Day Trip to Pompeii','Campo de\' Fiori & Piazzas','Borghese Gallery & Villa','Hidden Rome Walk','Gelato & Pasta Tour'],
+    morning:[
+      {a:'Vatican Museums at Opening (8am)',d:'The Vatican Museums open at 8am — the only way to see the Sistine Chapel without the crush of 25,000 daily visitors. Book skip-the-line tickets at museivaticani.va weeks in advance. Michelangelo\'s ceiling is in a different universe.'},
+      {a:'Colosseum First Entry (9am)',d:'The 80 AD amphitheater that held 50,000 spectators is best at opening. Book Arena Floor access to stand where gladiators actually fought. The adjacent Roman Forum and Palatine Hill are included in the ticket.'},
+      {a:'Campo de\' Fiori Morning Market',d:'From 6am, this lively piazza hosts Rome\'s most atmospheric daily food market — local vendors selling artichokes, truffles, dried pasta, and cheese. The statue of Giordano Bruno looms over the market where he was burned alive in 1600.'},
+      {a:'Borghese Gallery (Reservation Only)',d:'The Gallery Borghese admits only 360 visitors per 2-hour slot — book months ahead. The result: Bernini\'s Apollo & Daphne and Caravaggio\'s Boy with a Basket of Fruit in near-private viewing. The finest sculpture collection on earth.'},
+      {a:'Trastevere Morning Walk',d:'Rome\'s medieval neighborhood on the west bank of the Tiber is magical at 8am — the golden light on ochre walls, the Basilica di Santa Maria, and the smell of espresso from corner bars. This is the Rome that Instagram pretends it\'s found.'},
+      {a:'Trevi Fountain at Dawn',d:'The Baroque masterpiece Trevi Fountain (1762) is crowded all day — but at 6am you may have it alone. Throw your coin over your left shoulder with your right hand (the Fellini tradition) and wish for return to Rome.'},
+      {a:'Appian Way Cycling Morning',d:'Rent a bicycle at the Appia Antica Regional Park entrance for a morning on the Via Appia Antica — Rome\'s oldest road (312 BC), lined with crumbling tombs, umbrella pines, and the Catacombs of Callisto. Utterly timeless.'},
+      {a:'Pantheon at 9am',d:'The 2,000-year-old temple — with its perfect concrete dome and the oculus open to the sky — is one of humanity\'s greatest architectural achievements. Arrive before 10am to avoid the line. Free to enter (reservation required).'},
+    ],
+    afternoon:[
+      {a:'Roman Forum & Palatine Hill',d:'Combined ticket with the Colosseum covers the Forum (the heart of the ancient Roman empire) and Palatine Hill where emperors lived. Three hours minimum needed to properly explore the temple ruins, triumphal arches, and ancient roads.'},
+      {a:'Piazza Navona & Baroque Churches',d:'Bernini\'s Fountain of the Four Rivers centers Rome\'s most theatrical piazza. The adjacent Sant\'Agnese church and Sant\'Andrea della Valle are must-sees. Street artists and espresso at sidewalk cafes complete the afternoon.'},
+      {a:'Vatican St Peter\'s Basilica',d:'Free entry to the world\'s largest church — Michelangelo\'s Pietà, Bernini\'s baldachin, and the view from the dome (paid climb). The necropolis under the Basilica (separate booking required) holds St Peter\'s actual tomb.'},
+      {a:'Testaccio Food Market',d:'Rome\'s most authentic food market (open until 3pm) is in the working-class Testaccio neighborhood. Pasta al cacio e pepe freshly made, supplì (fried rice balls), artisanal cheeses, and the famous Testaccio porchetta sandwich.'},
+      {a:'Capitoline Museums',d:'The world\'s oldest public museums (1471) have the original Marcus Aurelius equestrian bronze, the Capitoline Wolf, and the finest collection of ancient Roman portrait busts. The rooftop terrace overlooks the Forum.'},
+      {a:'Day Trip: Pompeii & Vesuvius',d:'The Circumvesuviana train from Roma Termini reaches Pompeii in 2.5 hours. The 2,000-year-old city frozen by Vesuvius\'s eruption in 79 AD is overwhelming — the plaster body casts, intact frescoes, and Street of Abundance.'},
+      {a:'Prati Neighborhood & Castel Sant\'Angelo',d:'The Castel Sant\'Angelo (Hadrian\'s mausoleum, then papal fortress) has the Passetto — the secret escape corridor connecting it to the Vatican. The Prati neighborhood outside is Rome\'s best for aperitivo and less touristy lunches.'},
+      {a:'Ostia Antica Day Trip',d:'Rome\'s ancient seaport (founded 4th century BC) is better preserved than Pompeii and entirely free to enter with a Roma Pass. The mosaic-floored baths, apartment blocks (insulae), and theater are extraordinarily evocative.'},
+    ],
+    evening:[
+      {a:'Trastevere Dinner',d:'Trastevere at night is among the world\'s great evening experiences — golden-lit alleys, ivy-draped medieval facades, and trattorie serving bucatini all\'amatriciana, cacio e pepe, and artichoke. Reserve ahead at Da Enzo al 29 or Tonnarello.'},
+      {a:'Aperitivo in Pigneto',d:'Rome\'s hipster district east of the center has the best aperitivo scene — €7 Spritz includes an extensive free food spread. Bar Pigneto and Necci dal 1924 (where Pier Paolo Pasolini wrote) are neighborhood institutions.'},
+      {a:'Night Walk: Bridges & Piazzas',d:'Rome glows at night in a way that daytime obscures. Cross the Ponte Sant\'Angelo lined with Bernini angels, walk the Campo de\' Fiori after market hours, and end at the Pantheon (illuminated until 10pm) for gelato.'},
+      {a:'Opera at Teatro dell\'Opera',d:'Rome\'s opera house stages full productions September–June, with summer outdoor season at the Roman Baths of Caracalla — where Luciano Pavarotti famously performed. Tickets from €25. Dress code is smart.'},
+      {a:'Rooftop Aperitivo with Forum Views',d:'Several hotels (Hotel Minerva, Il Palazzetto) offer rooftop terrace aperitivo with directly-framed views of ancient Rome. Campari Spritz, local bruschetta, and the Colosseum illuminated at sunset. Book ahead.'},
+      {a:'Gelato Crawl in the Centro Storico',d:'Rome\'s gelato is the world\'s finest — but only at artigianale (artisan) gelaterie. Giolitti (1900), Fatamorgana (unusual flavors), and Come il Latte (pure cream texture) are the unmissables. Avoid places with piled-high fluorescent gelato.'},
+      {a:'Live Jazz at Big Mama Trastevere',d:'Via San Francesco a Ripa\'s Big Mama has hosted Rome\'s best jazz and blues nights since 1984. Live bands nightly from 9pm; membership fee of €5 covers entry for the entire year. Locals and expats mix freely.'},
+      {a:'Jewish Ghetto Night Walk',d:'Rome\'s Jewish community has been here continuously since 161 BC — the oldest in Europe. The Portico d\'Ottavia ruins, Great Synagogue, and the surrounding restaurants (Jewish-Roman cuisine: carciofi alla giudia) are magnificent.'},
+    ],
+    food:['Cacio e Pepe Pasta','Carbonara (Egg, Guanciale, Pecorino)','Supplì (Fried Rice Balls)','Artichoke alla Giudia (Jewish-style)','Pizza al Taglio','Gelato (Pistachio & Stracciatella)','Porchetta Sandwich','Tiramisu','Baccalà (Salt Cod)','Espresso Standing at the Bar'],
+    tips:[
+      {icon:'👗',title:'Vatican Dress Code',tip:'Bare shoulders and shorts/skirts above the knee are not permitted at St Peter\'s Basilica, the Sistine Chapel, or any Catholic church. Carry a scarf to cover up. Guards will turn you away — no exceptions.'},
+      {icon:'💧',title:'Drink from Nasoni Fountains',tip:'Rome has over 2,500 "nasone" (big nose) drinking fountains fed by the ancient aqueduct system. The water is cold, fresh, and safe. Carry a refillable bottle — the best free water in any city on earth.'},
+      {icon:'📅',title:'Book Everything in Advance',tip:'The Vatican Museums, Colosseum, and Borghese Gallery sell out weeks in advance during peak season (April–October). Booking fees are worth paying — the alternative is queuing 2–3 hours.'},
+      {icon:'🚇',title:'Walk or Take Bus, Avoid Taxis',tip:'Rome\'s centro storico is compact and best walked. The bus network (Google Maps-navigable) covers everywhere for €1.50. Official taxis have meters; agree price first for fixed-rate airport transfers.'},
+      {icon:'🎯',title:'Avoid Fake Restaurants',tip:'Restaurants with photos on menus outside the Colosseum and Vatican are invariably tourist traps. Walk 2–3 blocks further from major monuments for authentic food at half the price.'},
+      {icon:'🌡️',title:'Summer Heat is Intense',tip:'July–August in Rome is 35–40°C. Museums are air-conditioned — plan outdoor sites for morning only. Carry water constantly. The August Ferragosto holiday (Aug 15) closes many local restaurants for 2 weeks.'},
+    ]
+  },
+  default: {
+    name:'', flag:'🌍',
+    tagline:'Adventure awaits — every destination has its magic',
+    themes:['Arrival & City Overview','Historical & Cultural Sites','Nature & Scenic Spots','Local Markets & Food','Hidden Gems & Off the Beaten Path','Adventure & Activities','Shopping & Nightlife','Relaxation & Departure'],
+    morning:[
+      {a:'City Center Orientation Walk',d:'Start your day with a leisurely walk through the city center to get your bearings. Explore the main squares, historic streets, and landmarks at your own pace. Visit the local tourist information center for maps and recommendations.'},
+      {a:'Visit the Main Historical Site',d:'Head to the city\'s most important historical attraction in the morning — most museums and heritage sites have shorter queues early in the day. Check opening hours in advance and consider purchasing skip-the-line tickets online.'},
+      {a:'Local Market & Breakfast',d:'Explore the city\'s main morning market, where locals shop for fresh produce, street food, and handmade goods. This is the ideal place to sample authentic local breakfast dishes at a fraction of restaurant prices.'},
+      {a:'Scenic Viewpoint at Sunrise',d:'Find the city\'s best panoramic viewpoint and watch the sunrise bathe the landscape in golden light. This is typically the best time for photography and peaceful reflection before the day gets busy.'},
+      {a:'Guided Cultural Walking Tour',d:'Many cities offer free or low-cost guided walking tours departing from the main square each morning. An expert local guide provides historical context and insider knowledge that guidebooks miss completely.'},
+      {a:'Museum of Local History & Art',d:'The city\'s main museum typically contains the best overview of local history, culture, and art. Morning visits ensure cooler temperatures and fewer crowds. Audio guides are usually available in multiple languages.'},
+      {a:'Natural Attraction / Park Visit',d:'Start the day in nature — whether a national park, botanical garden, coastal walk, or mountain trail. Morning offers the best wildlife sightings, cooler temperatures, and the most beautiful light for photography.'},
+      {a:'Religious & Heritage Sites',d:'The city\'s historic temples, churches, mosques, or shrines are often most peaceful at opening time. Dress respectfully, observe local customs, and take time to appreciate the architectural and spiritual significance.'},
+    ],
+    afternoon:[
+      {a:'Local Cuisine Lunch Experience',d:'Seek out a restaurant that locals actually frequent — not the ones near tourist sites. Ask your hotel or a local for their personal favorite. A proper sit-down lunch is often the best value meal of the day.'},
+      {a:'Afternoon at a Local Beach or Park',d:'Spend the afternoon relaxing as locals do — at the beach, riverside, or in a city park. Pack snacks, observe local life, and recharge for the evening activities ahead.'},
+      {a:'Craft Workshop or Cooking Class',d:'Many destinations offer afternoon craft workshops in local traditions — pottery, weaving, cooking, or painting. These hands-on experiences create lasting memories and unique souvenirs to take home.'},
+      {a:'Shopping at Local Markets',d:'Browse the city\'s best shopping districts for local handicrafts, spices, textiles, and art. Compare prices between sellers, bargain politely where appropriate, and focus on buying things you won\'t find at home.'},
+      {a:'Boat Trip or Water Activity',d:'If the destination has water access, afternoon boat trips, kayaking, or snorkeling are ideal. The afternoon sun angles create beautiful light for underwater visibility and photography.'},
+      {a:'Neighborhood Walk: Off the Tourist Trail',d:'Every city has authentic residential neighborhoods that tourists rarely reach. Take public transport to a neighborhood market or local café district and simply wander — the real culture is always here.'},
+      {a:'Second Museum or Gallery Visit',d:'The city\'s secondary museums — art galleries, science museums, or specialized collections — often have fewer visitors and equally fascinating exhibits. Check for combined ticket deals with other attractions.'},
+      {a:'Afternoon Food Tour',d:'Join a guided food tour to try multiple local specialties at the best spots in the city. Small-group tours with local guides reveal restaurants, street food vendors, and markets that would take years to discover independently.'},
+    ],
+    evening:[
+      {a:'Sunset at the Best Viewpoint',d:'Every city has a place where the sunset is magical — a hilltop, harbour, rooftop, or bridge. Ask a local or your hotel for the insider sunset spot. Arrive 30 minutes early to secure a good position.'},
+      {a:'Traditional Dinner & Local Cuisine',d:'Make dinner the day\'s highlight — research the city\'s signature dishes and find a well-reviewed local restaurant that specializes in them. Set menus or tasting menus are excellent value for exploring multiple local flavors.'},
+      {a:'Evening Cultural Show or Performance',d:'Local music, dance, theatre, or storytelling performances happen nightly in most tourist destinations. From flamenco in Seville to Kathak in Rajasthan — these performances are windows into living culture.'},
+      {a:'Night Walk & Local Nightlife',d:'The city transforms after dark — street food vendors emerge, bars and cafes fill with locals, and the atmosphere changes completely. A safe evening walk through the old town or nightlife district is always rewarding.'},
+      {a:'Rooftop Bar for Nightcap',d:'Many hotels offer rooftop terrace access to non-guests. A nightcap cocktail with the city illuminated below is one of travel\'s most satisfying rituals. Ask your hotel concierge for the best locally-loved option.'},
+      {a:'Night Food Market',d:'Evening food markets are a fixture of street culture across Asia, the Middle East, and Latin America. The energy, smells, and flavors of a night market at 9pm are completely different from a daytime market experience.'},
+      {a:'Stargazing Outside the City',d:'If you\'ve planned time near a rural area or dark-sky location, a stargazing evening tour is unforgettable. Many national parks offer ranger-led astronomy programs. The Milky Way is worth the drive.'},
+      {a:'Spa & Wellness Evening',d:'After days of walking, an evening at a local spa using regional treatments is deeply restorative. Traditional hammams, Ayurvedic treatments, Thai massage, or a simple soak in natural hot springs are all worth experiencing.'},
+    ],
+    food:['Local Market Fresh Produce','Signature Regional Dish','Street Food Specialties','Local Bakery Items','Fresh Seafood (if coastal)','Traditional Dessert','Regional Beverage (Tea/Coffee/Juice)','Farmers Market Finds'],
+    tips:[
+      {icon:'📱',title:'Download Offline Maps',tip:'Download Google Maps offline for your destination before you travel — it works without internet connection. Also download the local transit app and a translation app (Google Translate with offline language pack) for maximum independence.'},
+      {icon:'💱',title:'Currency & Payment',tip:'Research the local currency before arrival. ATMs at airports often have worse rates than city center banks. Notify your bank of your travel dates to avoid card blocks. Carry some local cash for small vendors and transport.'},
+      {icon:'🛡️',title:'Travel Insurance is Essential',tip:'Comprehensive travel insurance covering medical evacuation, trip cancellation, and baggage loss is non-negotiable. Emergency medical care abroad can cost tens of thousands of dollars without coverage.'},
+      {icon:'💊',title:'Health & Vaccinations',tip:'Check travel health requirements 4–6 weeks before departure. Some destinations require proof of yellow fever vaccination; others recommend malaria prophylaxis. Visit a travel clinic for destination-specific advice.'},
+      {icon:'📂',title:'Document Copies',tip:'Make digital and paper copies of your passport, visa, insurance, and travel bookings. Store digital copies in cloud storage (Google Drive/Dropbox) and email yourself a copy. Keep a physical copy separate from originals.'},
+      {icon:'🗣️',title:'Learn Basic Local Phrases',tip:'Even a few words in the local language — hello, thank you, please, how much? — transforms interactions with locals. People respond warmly to any effort to speak their language, even badly. It shows respect.'},
+    ]
+  }
+};
+
+/* ─── Find matching destination ─── */
+function matchDest(input) {
+  const s = input.toLowerCase().replace(/[^a-z ]/g,'');
+  if (s.includes('tokyo') || s.includes('japan')) return DESTINATIONS.tokyo;
+  if (s.includes('paris') || s.includes('france')) return DESTINATIONS.paris;
+  if (s.includes('goa') || (s.includes('india') && s.includes('goa'))) return DESTINATIONS.goa;
+  if (s.includes('bali') || s.includes('indonesia') || s.includes('ubud') || s.includes('seminyak')) return DESTINATIONS.bali;
+  if (s.includes('dubai') || s.includes('uae') || s.includes('emirates')) return DESTINATIONS.dubai;
+  if (s.includes('london') || s.includes('england') || s.includes('uk')) return DESTINATIONS.london;
+  if (s.includes('new york') || s.includes('nyc') || s.includes('manhattan')) return DESTINATIONS.newYork;
+  if (s.includes('rome') || s.includes('roma') || s.includes('italy') || s.includes('milan') || s.includes('florence')) return DESTINATIONS.rome;
+  // Generic fallback
+  const d = JSON.parse(JSON.stringify(DESTINATIONS.default));
+  d.name = cap(input.trim());
+  d.flag = '🌍';
+  return d;
+}
+
+/* ─── Build itinerary from template ─── */
+function buildItinerary(dest, params) {
+  const numDays = daysBetween(params.sd, params.ed) + 1;
+  const data = matchDest(dest);
+
+  const days = [];
+  const morn = data.morning, aftn = data.afternoon, evng = data.evening;
+  const themes = data.themes || [];
+
+  for (let i = 0; i < numDays; i++) {
+    const mi = i % morn.length;
+    const ai = i % aftn.length;
+    const ei = i % evng.length;
+    const foodSlice = data.food.slice(0, Math.min(4, data.food.length));
+    const rotFood = data.food.slice(i % Math.max(1, data.food.length - 3), (i % Math.max(1, data.food.length - 3)) + 3);
+    const dayFood = rotFood.length ? rotFood : foodSlice;
+
+    days.push({
+      day: i+1,
+      theme: themes[i % themes.length] || `Day ${i+1} — Explore ${data.name}`,
+      morning: morn[mi] || morn[0],
+      afternoon: aftn[ai] || aftn[0],
+      evening: evng[ei] || evng[0],
+      localFood: dayFood,
+      dayTip: data.tips[i % data.tips.length]?.tip || 'Stay hydrated, be flexible, and embrace the unexpected — the best travel moments are often unplanned.',
+    });
+  }
+
+  return {
+    destination: data.name + (data.flag ? ' ' + data.flag : ''),
+    tagline: data.tagline,
+    days,
+    generalTips: data.tips,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LOADING ANIMATION
+══════════════════════════════════════════════════════════════ */
+let _stimer = null;
+function startSteps() {
+  const steps = document.querySelectorAll('#lSteps .step');
+  let i = 0;
+  steps.forEach(s => s.className = 'step');
+  steps[0].classList.add('on');
+  _stimer = setInterval(() => {
+    steps[i].className = 'step done';
+    i++;
+    if (i < steps.length) steps[i].classList.add('on');
+    else clearInterval(_stimer);
+  }, 700);
+}
+function stopSteps(){ clearInterval(_stimer); }
+
+/* ═══════════════════════════════════════════════════════════
+   UI HELPERS
+══════════════════════════════════════════════════════════════ */
+function showErr(msg) {
+  const b = document.getElementById('errBar');
+  document.getElementById('errMsg').textContent = msg;
+  b.style.display = 'flex';
+  b.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('genBtn');
+  document.getElementById('bIcon').style.display = on ? 'none' : '';
+  document.getElementById('bTxt').style.display  = on ? 'none' : '';
+  document.getElementById('bLoad').style.display = on ? 'inline-flex' : 'none';
+  btn.disabled = on;
+  document.getElementById('loadCard').style.display = on ? 'block' : 'none';
+  if (on) {
+    document.getElementById('output').style.display = 'none';
+    document.getElementById('errBar').style.display = 'none';
+    startSteps();
+    document.getElementById('loadCard').scrollIntoView({behavior:'smooth',block:'start'});
+  } else {
+    stopSteps();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════════════════════════ */
+function render(data, params) {
+  const nights = daysBetween(params.sd, params.ed);
+  document.getElementById('sDest').textContent    = data.destination;
+  document.getElementById('sDates').textContent   = `📅 ${fmtD(params.sd)} – ${fmtD(params.ed)}`;
+  document.getElementById('sNights').textContent  = `🌙 ${nights} Night${nights!==1?'s':''}`;
+  document.getElementById('sTrav').textContent    = `👥 ${params.travelers} Traveler${params.travelers>1?'s':''}`;
+  document.getElementById('sBudget').textContent  = `${bEmoji(params.budget)} ${params.budget}`;
+
+  const grid = document.getElementById('itinGrid');
+  grid.innerHTML = '';
+  (data.days||[]).forEach((day,i) => {
+    const el = makeDayCard(day, i, params.sd);
+    el.style.animationDelay = i * 0.06 + 's';
+    grid.appendChild(el);
+  });
+
+  const tg = document.getElementById('gTipsGrid');
+  tg.innerHTML = '';
+  const tips = data.generalTips||[];
+  if (tips.length) {
+    tips.forEach(t => {
+      tg.innerHTML += `<div class="gtip">
+        <div class="gtip-icon">${esc(t.icon||'💡')}</div>
+        <div class="gtip-title">${esc(t.title||'')}</div>
+        <div class="gtip-text">${esc(t.tip||'')}</div>
+      </div>`;
+    });
+    document.getElementById('gTips').style.display = 'block';
+  }
+
+  document.getElementById('output').style.display = 'block';
+  document.getElementById('output').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function makeDayCard(day, idx, sd) {
+  const label = dayLabel(sd, idx);
+  const el = document.createElement('div');
+  el.className = 'day-card card';
+  const ftags = (day.localFood||[]).map(f=>`<span class="ftag">${esc(f)}</span>`).join('');
+  el.innerHTML = `
+    <div class="day-head" onclick="this.closest('.day-card').classList.toggle('collapsed')">
+      <div class="day-badge"><span class="dn">${day.day}</span><span>DAY</span></div>
+      <div class="day-meta">
+        <div class="day-title">${esc(day.theme||'Day '+day.day)}</div>
+        <div class="day-date">${esc(label)}</div>
+      </div>
+      <span class="day-chev">⌄</span>
+    </div>
+    <div class="day-body">
+      <div class="day-inner">
+        ${day.morning?`<div class="slot morn">
+          <div class="slot-ic"><div class="slot-icon">🌅</div><div class="slot-line"></div></div>
+          <div class="slot-cnt">
+            <div class="slot-lbl">Morning</div>
+            <div class="slot-name">${esc(day.morning.a||day.morning.activity||'')}</div>
+            <div class="slot-desc">${esc(day.morning.d||day.morning.description||'')}</div>
+          </div></div>`:''}
+        ${day.afternoon?`<div class="slot aftn">
+          <div class="slot-ic"><div class="slot-icon">☀️</div><div class="slot-line"></div></div>
+          <div class="slot-cnt">
+            <div class="slot-lbl">Afternoon</div>
+            <div class="slot-name">${esc(day.afternoon.a||day.afternoon.activity||'')}</div>
+            <div class="slot-desc">${esc(day.afternoon.d||day.afternoon.description||'')}</div>
+          </div></div>`:''}
+        ${day.evening?`<div class="slot evng">
+          <div class="slot-ic"><div class="slot-icon">🌙</div><div class="slot-line"></div></div>
+          <div class="slot-cnt">
+            <div class="slot-lbl">Evening</div>
+            <div class="slot-name">${esc(day.evening.a||day.evening.activity||'')}</div>
+            <div class="slot-desc">${esc(day.evening.d||day.evening.description||'')}</div>
+          </div></div>`:''}
+        ${ftags?`<div class="food-box"><div class="food-ttl">🍽️ Local Food to Try</div><div class="food-tags">${ftags}</div></div>`:''}
+        ${day.dayTip?`<div class="tip-box"><div class="tip-ttl">💡 Day Tip</div><div class="tip-txt">${esc(day.dayTip)}</div></div>`:''}
+      </div>
+    </div>`;
+  return el;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN: GENERATE
+══════════════════════════════════════════════════════════════ */
+function validate() {
+  const dest = document.getElementById('dest').value.trim();
+  const sd   = document.getElementById('sd').value;
+  const ed   = document.getElementById('ed').value;
+  if (!dest) return 'Please enter a destination.';
+  if (!sd)   return 'Please select a start date.';
+  if (!ed)   return 'Please select an end date.';
+  if (new Date(ed) < new Date(sd)) return 'End date must be after the start date.';
+  if (daysBetween(sd,ed) > 29)    return 'Please choose a trip of 30 days or fewer.';
+  if (S.interests.length === 0)   return 'Please select at least one interest.';
+  return null;
+}
+
+function generate() {
+  document.getElementById('errBar').style.display = 'none';
+  const err = validate();
+  if (err) { showErr(err); return; }
+
+  const params = {
+    dest    : document.getElementById('dest').value.trim(),
+    sd      : document.getElementById('sd').value,
+    ed      : document.getElementById('ed').value,
+    travelers: parseInt(document.getElementById('trav').value)||2,
+    budget  : S.budget,
+    style   : S.style,
+    interests: [...S.interests],
+    notes   : document.getElementById('notes').value.trim(),
+  };
+
+  setLoading(true);
+
+  // Simulate generation delay for UX
+  setTimeout(() => {
+    try {
+      const data = buildItinerary(params.dest, params);
+      S.last  = data;
+      S.lastP = params;
+      render(data, params);
+    } catch(e) {
+      showErr('Something went wrong building your itinerary. Please try again.');
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, 3200);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET
+══════════════════════════════════════════════════════════════ */
+function resetAll() {
+  ['output','errBar','loadCard'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('dest').value  = '';
+  document.getElementById('trav').value  = 2;
+  document.getElementById('notes').value = '';
+  S.budget='Moderate'; S.style='Cultural'; S.interests=['Local Food','Photography'];
+  document.querySelectorAll('#budgetChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.v==='Moderate'));
+  document.querySelectorAll('#styleChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.v==='Cultural'));
+  document.querySelectorAll('#interestChips .chip').forEach(c=>c.classList.toggle('on',['Local Food','Photography'].includes(c.dataset.v)));
+  const t=new Date(),n=new Date(); n.setDate(t.getDate()+7);
+  const fmt=d=>d.toISOString().split('T')[0];
+  document.getElementById('sd').value=fmt(t);
+  document.getElementById('ed').value=fmt(n);
+  document.getElementById('planner').scrollIntoView({behavior:'smooth'});
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EXPORT & COPY
+══════════════════════════════════════════════════════════════ */
+function doPrint() {
+  document.querySelectorAll('.day-card.collapsed').forEach(c=>c.classList.remove('collapsed'));
+  setTimeout(()=>window.print(),200);
+}
+
+async function doCopy() {
+  const d=S.last, p=S.lastP;
+  if (!d||!p) return;
+  let txt=`✈️ ${d.destination} — Travel Itinerary\n📅 ${fmtD(p.sd)} to ${fmtD(p.ed)}\n`;
+  if (d.tagline) txt+=`"${d.tagline}"\n`;
+  txt+='\n'+'─'.repeat(40)+'\n\n';
+  (d.days||[]).forEach(day=>{
+    txt+=`DAY ${day.day}: ${day.theme||''}\n${'─'.repeat(30)}\n`;
+    const m=day.morning, a=day.afternoon, e=day.evening;
+    if(m) txt+=`🌅 Morning: ${m.a||m.activity}\n   ${m.d||m.description}\n\n`;
+    if(a) txt+=`☀️ Afternoon: ${a.a||a.activity}\n   ${a.d||a.description}\n\n`;
+    if(e) txt+=`🌙 Evening: ${e.a||e.activity}\n   ${e.d||e.description}\n\n`;
+    if(day.localFood?.length) txt+=`🍽️ Food: ${day.localFood.join(', ')}\n`;
+    if(day.dayTip) txt+=`💡 Tip: ${day.dayTip}\n`;
+    txt+='\n';
+  });
+  if(d.generalTips?.length){
+    txt+='\n💡 TRAVEL TIPS\n'+'─'.repeat(30)+'\n';
+    d.generalTips.forEach(t=>txt+=`${t.icon} ${t.title}: ${t.tip}\n`);
+  }
+  txt+='\n— Generated by WanderAI';
+  try {
+    await navigator.clipboard.writeText(txt);
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='✅ Copied!';
+    setTimeout(()=>btn.textContent='📋 Copy',2500);
+  } catch { showErr('Could not access clipboard. Please copy manually.'); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  const t=new Date(),n=new Date(); n.setDate(t.getDate()+7);
+  const fmt=d=>d.toISOString().split('T')[0];
+  document.getElementById('sd').value=fmt(t);
+  document.getElementById('ed').value=fmt(n);
+  // Ctrl+Enter shortcut
+  document.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&!document.getElementById('genBtn').disabled) generate();
+  });
+});
+</script>
+</body>
+</html>
